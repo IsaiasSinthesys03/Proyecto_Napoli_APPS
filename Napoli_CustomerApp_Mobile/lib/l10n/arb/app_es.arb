@@ -1,0 +1,489 @@
+{
+    "@@locale": "es",
+    "appTitle": "Pizzeria UI",
+    "@appTitle": {
+        "description": "El título de la aplicación"
+    },
+    "loginTitle": "Bienvenido de nuevo",
+    "@loginTitle": {
+        "description": "Título de la pantalla de inicio de sesión"
+    },
+    "loginSubtitle": "Ingresa tus credenciales para continuar",
+    "@loginSubtitle": {
+        "description": "Subtítulo de la pantalla de inicio de sesión"
+    },
+    "emailLabel": "Correo electrónico",
+    "@emailLabel": {
+        "description": "Etiqueta para el campo de correo electrónico"
+    },
+    "passwordLabel": "Contraseña",
+    "@passwordLabel": {
+        "description": "Etiqueta para el campo de contraseña"
+    },
+    "loginButton": "Iniciar Sesión",
+    "@loginButton": {
+        "description": "Texto del botón de inicio de sesión"
+    },
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "@forgotPassword": {
+        "description": "Texto para recuperar contraseña"
+    },
+    "dontHaveAccount": "¿No tienes una cuenta?",
+    "@dontHaveAccount": {
+        "description": "Texto para usuarios sin cuenta"
+    },
+    "register": "Regístrate",
+    "@register": {
+        "description": "Texto del enlace de registro"
+    },
+    "welcomeTo": "Bienvenido a",
+    "signInTab": "INICIAR",
+    "signUpTab": "REGISTRARSE",
+    "nameLabel": "Nombre completo",
+    "confirmPasswordLabel": "Confirmar contraseña",
+    "orLoginWith": "O inicia sesión con",
+    "alreadyHaveAccount": "¿Ya tienes cuenta?",
+    "loginAction": "Inicia sesión",
+    "registerAction": "Regístrate",
+    "homeAddress": "Ciudad de México, México",
+    "searchHint": "BUSCAR PIZZAS, PASTAS...",
+    "specialOffers": "OFERTAS ESPECIALES",
+    "specialOfferDesc": "2x1 en pizzas seleccionadas",
+    "catAll": "Todos",
+    "catPizzas": "Pizzas",
+    "catPastas": "Pastas",
+    "catDrinks": "Bebidas",
+    "catDesserts": "Postres",
+    "recommendations": "Recomendaciones para ti",
+    "fullMenu": "Menú Completo",
+    "cartTitle": "Mi Carrito",
+    "cartEmpty": "Tu carrito está vacío",
+    "cartEmptyDesc": "¡Agrega deliciosas pizzas!",
+    "exploreMenu": "Explorar menú",
+    "extrasLabel": "Extras: ",
+    "estimatedTime": "Tiempo estimado: 25-35 min",
+    "couponHint": "Código de cupón",
+    "applyCoupon": "Aplicar",
+    "couponApplied": "Cupón {code} aplicado: {desc}",
+    "@couponApplied": {
+        "placeholders": {
+            "code": { "type": "String" },
+            "desc": { "type": "String" }
+        }
+    },
+    "enterCoupon": "Por favor ingresa un código de cupón",
+    "couponRemoved": "Cupón eliminado",
+    "subtotal": "Subtotal",
+    "deliveryFee": "Costo de envío",
+    "discount": "Descuento",
+    "total": "Total",
+    "confirmOrder": "Confirmar Pedido",
+    "settingsTitle": "Configuración",
+    "editProfile": "Editar Perfil",
+    "appSettings": "Configuración de la App",
+    "darkMode": "Tema Oscuro",
+    "darkModeSubtitle": "Cambiar entre tema claro y oscuro",
+    "notifications": "Notificaciones",
+    "notificationsSubtitle": "Configurar notificaciones push",
+    "language": "Idioma",
+    "languageSubtitle": "Español",
+    "comingSoonLanguage": "Próximamente: Cambio de idioma",
+    "preferences": "Preferencias",
+    "savedAddresses": "Direcciones Guardadas",
+    "savedAddressesSubtitle": "Gestionar direcciones de entrega",
+    "purchaseHistory": "Historial de Compras",
+    "purchaseHistorySubtitle": "Ver pedidos anteriores y favoritos",
+    "helpSupport": "Ayuda y Soporte",
+    "helpCenter": "Centro de Ayuda",
+    "helpCenterSubtitle": "Preguntas frecuentes y soporte",
+    "comingSoonHelp": "Próximamente: Centro de ayuda",
+    "about": "Acerca de",
+    "version": "Versión {version}",
+    "@version": {
+        "placeholders": {
+            "version": { "type": "String" }
+        }
+    },
+    "logout": "Cerrar Sesión",
+    "logoutSubtitle": "Salir de la aplicación",
+    "aboutDescription": "Aplicación de pedidos de pizza para Napoli Restaurant.",
+    "aboutFooter": "Desarrollado con Flutter y mucho ❤️",
+    "logoutConfirmation": "¿Estás seguro de que quieres cerrar sesión?",
+    "cancel": "Cancelar",
+    "sessionClosed": "Sesión cerrada",
+    "save": "Guardar",
+    "changePhoto": "Cambiar foto",
+    "photo": "Foto",
+    "personalInfo": "Información Personal",
+    "fullName": "Nombre completo",
+    "nameRequired": "El nombre es requerido",
+    "email": "Correo electrónico",
+    "emailRequired": "El email es requerido",
+    "emailInvalid": "Ingresa un email válido",
+    "phone": "Teléfono",
+    "phoneRequired": "El teléfono es requerido",
+    "address": "Dirección principal",
+    "addressRequired": "La dirección es requerida",
+    "saveChanges": "Guardar Cambios",
+    "profileUpdated": "Perfil actualizado correctamente",
+    "photoPermissionTitle": "\"Napoli Pizza\" quiere acceder a tus fotos",
+    "photoPermissionDesc": "Para que puedas tomar o seleccionar una foto de perfil desde tu dispositivo.",
+    "deny": "No permitir",
+    "allow": "Permitir",
+    "photoPermissionNote": "Solo accederemos a las fotos que selecciones",
+    "changeProfilePhoto": "Cambiar foto de perfil",
+    "takePhoto": "Tomar foto",
+    "takePhotoSubtitle": "Usar la cámara del dispositivo",
+    "chooseGallery": "Elegir de galería",
+    "chooseGallerySubtitle": "Seleccionar de tus fotos",
+    "useInitials": "Usar iniciales",
+    "useInitialsSubtitle": "Volver al avatar con iniciales",
+    "photoCaptured": "Foto capturada con éxito",
+    "photoSelected": "Foto seleccionada de galería",
+    "usingInitials": "Usando iniciales como avatar",
+    "myOrders": "Mis Pedidos",
+    "noOrders": "No tienes pedidos aún",
+    "orderNumber": "Pedido #{id}",
+    "@orderNumber": {
+        "placeholders": {
+            "id": { "type": "String" }
+        }
+    },
+    "orderDate": "{date}",
+    "@orderDate": {
+        "placeholders": {
+            "date": { "type": "DateTime", "format": "yMd" }
+        }
+    },
+    "orderItem": "{quantity}x {name}",
+    "@orderItem": {
+        "placeholders": {
+            "quantity": { "type": "int" },
+            "name": { "type": "String" }
+        }
+    },
+    "moreItems": "+ {count} más...",
+    "@moreItems": {
+        "placeholders": {
+            "count": { "type": "int" }
+        }
+    },
+    "statusPending": "Pendiente",
+    "statusConfirmed": "Confirmado",
+    "statusPreparing": "Preparando",
+    "statusDelivering": "En camino",
+    "statusCompleted": "Entregado",
+    "statusCancelled": "Cancelado",
+    "addedToCart": "Añadido al carrito",
+    "productNotFound": "Producto no encontrado",
+    "quantity": "Cantidad",
+    "customizeOrder": "Personaliza tu pedido",
+    "specialInstructions": "Instrucciones especiales",
+    "specialInstructionsHint": "Ej: Sin cebolla, bien cocida, etc.",
+    "addToCart": "Añadir al carrito",
+    "errorProcessingOrder": "Error al procesar el pedido: {error}",
+    "@errorProcessingOrder": {
+        "placeholders": {
+            "error": { "type": "String" }
+        }
+    },
+    "selectAddressOrManual": "Por favor selecciona una dirección guardada o completa la dirección manualmente",
+    "enterPhoneNumber": "Por favor completa el número de teléfono",
+    "completeTransferData": "Por favor completa los datos de transferencia y adjunta el comprobante",
+    "confirmOrder": "Confirmar Pedido",
+    "orderSummary": "Resumen del Pedido",
+    "extras": "Extras: {extras}",
+    "@extras": {
+        "placeholders": {
+            "extras": { "type": "String" }
+        }
+    },
+    "subtotal": "Subtotal:",
+    "deliveryFee": "Envío:",
+    "discountWithCode": "Descuento ({code}):",
+    "@discountWithCode": {
+        "placeholders": {
+            "code": { "type": "String" }
+        }
+    },
+    "total": "Total:",
+    "estimatedTime": "Tiempo estimado: 25-35 min",
+    "deliveryAddress": "Dirección de Envío",
+    "change": "Cambiar",
+    "useDifferentAddress": "Usar dirección diferente",
+    "useSavedAddresses": "Usar direcciones guardadas",
+    "phone": "Teléfono *",
+    "phoneHint": "Ej: +52 55 1234-5678",
+    "specialNotes": "Notas especiales (opcional)",
+    "specialNotesHint": "Ej: Tocar timbre 3 veces, dejar en puerta, etc.",
+    "defaultLabel": "Predeterminada",
+    "manualAddressInfo": "Completando una dirección diferente a tus direcciones guardadas",
+    "street": "Calle *",
+    "streetHint": "Ej: Calle Principal",
+    "number": "Número *",
+    "numberHint": "Ej: 123",
+    "apartment": "Apto/Depto (opcional)",
+    "apartmentHint": "Ej: Apto 5B",
+    "simulationMessage": "Este es un pago de simulación. No se realizará ningún cargo.",
+    "orderDelivered": "¡Pedido Entregado!",
+    "rateExperience": "¿Cómo fue tu experiencia?",
+    "later": "Más tarde",
+    "orderStatus": "Estado del Pedido",
+    "exitTracking": "¿Salir del seguimiento?",
+    "exitTrackingMessage": "Tu pedido seguirá en proceso. Puedes volver en cualquier momento.",
+    "realTimeMap": "Mapa en tiempo real",
+    "yourDeliveryMan": "Tu repartidor",
+    "statusReceived": "¡Gracias por tu pedido! Estamos trabajando en ello.",
+    "statusPreparing": "Nuestros chefs están preparando tu comida con amor.",
+    "statusOnWay": "¡Ya casi llega! Tu comida está en camino.",
+    "statusEnjoy": "¡Disfruta tu comida deliciosa!",
+    "bankTransfer": "Transferencia Bancaria",
+    "instructions": "Instrucciones",
+    "transferInstructions": "Realiza la transferencia con los datos bancarios proporcionados y adjunta el comprobante para confirmar tu pedido.",
+    "transferAmount": "Monto a Transferir",
+    "bankData": "Datos Bancarios",
+    "bank": "Banco",
+    "holder": "Titular",
+    "clabe": "CLABE",
+    "account": "Cuenta",
+    "concept": "Concepto",
+    "transferReceipt": "Comprobante de Transferencia",
+    "gallery": "Galería",
+    "camera": "Cámara",
+    "receiptAttached": "Comprobante Adjuntado",
+    "receiptLoaded": "Tu comprobante ha sido cargado correctamente",
+    "important": "Importante: Tu pedido será procesado una vez que validemos tu transferencia. Esto puede tardar entre 5 y 30 minutos.",
+    "confirmTransfer": "Confirmar Transferencia",
+    "attachReceiptError": "Por favor adjunta el comprobante de transferencia",
+    "clipboardCopied": "{label} copiado al portapapeles",
+    "@clipboardCopied": {
+        "placeholders": {
+            "label": { "type": "String" }
+        }
+    },
+    "imagePickerPlaceholder": "Función de imagen disponible cuando se instale image_picker",
+    "cameraPlaceholder": "Función de cámara disponible cuando se instale image_picker",
+    "outOfHours": "Fuera de Horario",
+    "bankDataUnavailable": "Los datos bancarios solo están disponibles durante nuestro horario de atención.",
+    "nextOpening": "Próxima apertura:",
+    "back": "Volver",
+    "exit": "Salir",
+    "passwordsDoNotMatch": "Las contraseñas no coinciden",
+    "enterPassword": "Ingresa tu contraseña",
+    "passwordMinLength": "Mínimo 6 caracteres",
+    "registerScreenTitle": "Registrarse",
+    "confirmPasswordRequired": "Confirma tu contraseña",
+    "createAccount": "CREAR CUENTA",
+    "splashTitle": "Napoli Pizzeria",
+    "splashSlogan": "Las mejores pizzas de la ciudad",
+    "general": "General",
+    "permissionRequired": "Para recibir notificaciones, necesitas otorgar permisos del sistema.",
+    "allNotifications": "Todas las Notificaciones",
+    "allNotificationsSubtitle": "Activar o desactivar todas las notificaciones",
+    "notificationTypes": "Tipos de Notificaciones",
+    "orderUpdates": "Actualizaciones de Pedidos",
+    "orderUpdatesSubtitle": "Estados del pedido y entregas",
+    "promotions": "Promociones",
+    "promotionsSubtitle": "Descuentos y ofertas especiales",
+    "newProducts": "Nuevos Productos",
+    "newProductsSubtitle": "Alertas de nuevos productos en el menú",
+    "deliveryReminders": "Recordatorios de Entrega",
+    "deliveryRemindersSubtitle": "Alertas cuando el pedido está cerca",
+    "chatMessages": "Mensajes de Chat",
+    "chatMessagesSubtitle": "Notificaciones del servicio al cliente",
+    "weeklyOffers": "Ofertas Semanales",
+    "weeklyOffersSubtitle": "Promociones especiales de fin de semana",
+    "appUpdates": "Actualizaciones de App",
+    "appUpdatesSubtitle": "Nuevas versiones y características",
+    "soundVibration": "Sonido y Vibración",
+    "sound": "Sonido",
+    "soundSubtitle": "Reproducir sonido con las notificaciones",
+    "notificationTone": "Tono de Notificación",
+    "vibration": "Vibración",
+    "vibrationSubtitle": "Vibrar con las notificaciones",
+    "doNotDisturb": "No Molestar",
+    "quietHours": "Horario de Silencio",
+    "quietHoursSubtitle": "No recibir notificaciones en ciertos horarios",
+    "startTime": "Hora de Inicio",
+    "endTime": "Hora de Fin",
+    "importantNotificationsInfo": "Las notificaciones importantes como actualizaciones de pedidos siempre se mostrarán, incluso en modo silencioso.",
+    "defaultTone": "Predeterminado",
+    "bellTone": "Campana",
+    "chimeTone": "Campanilla",
+    "selectTone": "Seleccionar Tono",
+    "notificationLabel": "Notificación",
+    "addAddress": "Agregar Dirección",
+    "noSavedAddresses": "No hay direcciones guardadas",
+    "noSavedAddressesDesc": "Agrega direcciones para hacer tus pedidos más rápido",
+    "addFirstAddress": "Agregar Primera Dirección",
+    "setAsDefault": "Hacer predeterminada",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleteAddressTitle": "Eliminar dirección",
+    "deleteAddressConfirmation": "¿Estás seguro de que quieres eliminar \"{label}\"?",
+    "@deleteAddressConfirmation": {
+        "placeholders": {
+            "label": { "type": "String" }
+        }
+    },
+    "addressDeleted": "Dirección \"{label}\" eliminada",
+    "@addressDeleted": {
+        "placeholders": {
+            "label": { "type": "String" }
+        }
+    },
+    "editAddressTitle": "Editar Dirección",
+    "addAddressTitle": "Agregar Dirección",
+    "labelLabel": "Etiqueta *",
+    "labelHint": "Ej: Casa, Trabajo, Universidad, etc.",
+    "addressLabel": "Dirección *",
+    "addressHint": "Calle, número, colonia",
+    "cityLabel": "Ciudad *",
+    "cityHint": "Ciudad, Estado",
+    "detailsLabel": "Detalles adicionales",
+    "detailsHint": "Referencias, color de casa, etc.",
+    "setAsDefaultLabel": "Establecer como predeterminada",
+    "updateAction": "Actualizar",
+    "addAction": "Agregar",
+    "addressUpdated": "Dirección actualizada",
+    "addressAdded": "Dirección agregada",
+    "addressSetAsDefault": "{label} es ahora tu dirección predeterminada",
+    "@addressSetAsDefault": {
+        "placeholders": {
+            "label": { "type": "String" }
+        }
+    },
+    "paymentMethodsTitle": "Métodos de Pago",
+    "addCard": "Agregar Tarjeta",
+    "noPaymentMethods": "No hay métodos de pago",
+    "noPaymentMethodsDesc": "Agrega una tarjeta para realizar pagos más rápido",
+    "addFirstCard": "Agregar Primera Tarjeta",
+    "alternativeMethods": "Métodos Alternativos",
+    "cash": "Efectivo",
+    "cashSubtitle": "Pagar al recibir el pedido",
+    "cashAvailable": "Pago en efectivo disponible al realizar pedido",
+    "bankTransfer": "Transferencia Bancaria",
+    "bankTransferSubtitle": "SPEI y transferencias instantáneas",
+    "bankTransferComingSoon": "Próximamente: Pagos por transferencia",
+    "cardHolderLabel": "TITULAR",
+    "expiryLabel": "EXPIRA",
+    "deletePaymentMethodTitle": "Eliminar método de pago",
+    "deletePaymentMethodConfirmation": "¿Estás seguro de que quieres eliminar la tarjeta {brand} terminada en {last4}?",
+    "@deletePaymentMethodConfirmation": {
+        "placeholders": {
+            "brand": { "type": "String" },
+            "last4": { "type": "String" }
+        }
+    },
+    "paymentMethodDeleted": "Tarjeta {brand} eliminada",
+    "@paymentMethodDeleted": {
+        "placeholders": {
+            "brand": { "type": "String" }
+        }
+    },
+    "editCardTitle": "Editar Tarjeta",
+    "addCardTitle": "Agregar Tarjeta",
+    "cardNumberLabel": "Número de tarjeta *",
+    "cardHolderNameLabel": "Nombre del titular *",
+    "expiryDateLabel": "Expiración *",
+    "cvvLabel": "CVV *",
+    "securityInfo": "Tus datos están protegidos con encriptación de nivel bancario",
+    "cardUpdated": "Tarjeta actualizada",
+    "cardAdded": "Tarjeta agregada correctamente",
+    "cardSetAsDefault": "{brand} terminada en {last4} es ahora predeterminada",
+    "@cardSetAsDefault": {
+        "placeholders": {
+            "brand": { "type": "String" },
+            "last4": { "type": "String" }
+        }
+    },
+    "purchaseHistoryTitle": "Historial de Compras",
+    "recentTab": "Recientes",
+    "favoritesTab": "Favoritos",
+    "filterAll": "Todos",
+    "filterDelivered": "Entregados",
+    "filterInProgress": "En Progreso",
+    "filterCancelled": "Cancelados",
+    "noOrdersInProgress": "No tienes órdenes en progreso",
+    "noOrdersCancelled": "No tienes órdenes canceladas",
+    "noOrdersDelivered": "No tienes órdenes entregadas",
+    "noOrders": "No has realizado ningún pedido",
+    "ordersEmptyDesc": "Cuando realices pedidos aparecerán aquí",
+    "moreProducts": "+ {count} producto(s) más",
+    "@moreProducts": {
+        "placeholders": {
+            "count": { "type": "int" }
+        }
+    },
+    "totalLabel": "Total: ",
+    "rateOrder": "Calificar pedido",
+    "yourRating": "Tu calificación: {rating}/5",
+    "@yourRating": {
+        "placeholders": {
+            "rating": { "type": "int" }
+        }
+    },
+    "trackOrder": "Rastrear",
+    "orderAgain": "Pedir Otra Vez",
+    "orderCancelled": "Pedido cancelado",
+    "statusDelivered": "Entregado",
+    "statusInProgress": "En Progreso",
+    "statusCancelled": "Cancelado",
+    "orderedTimes": "Pedido {count} veces",
+    "@orderedTimes": {
+        "placeholders": {
+            "count": { "type": "int" }
+        }
+    },
+    "yourFavorites": "Tus Favoritos",
+    "favoritesDesc": "Productos que has pedido más de una vez",
+    "orderFavorites": "Pedir Mis Favoritos",
+    "timeAgoMinutes": "Hace {minutes} min",
+    "@timeAgoMinutes": {
+        "placeholders": {
+            "minutes": { "type": "int" }
+        }
+    },
+    "timeAgoHours": "Hace {hours}h",
+    "@timeAgoHours": {
+        "placeholders": {
+            "hours": { "type": "int" }
+        }
+    },
+    "yesterday": "Ayer",
+    "timeAgoDays": "Hace {days} días",
+    "@timeAgoDays": {
+        "placeholders": {
+            "days": { "type": "int" }
+        }
+    },
+    "confirmTitle": "Confirmar",
+    "clearHistoryConfirmation": "¿Deseas borrar todo el historial de cupones?",
+    "clearAll": "Borrar Todo",
+    "historyCleared": "Historial borrado",
+    "discount10": "10% de descuento",
+    "discount20": "20% de descuento",
+    "discount50": "50% de descuento",
+    "specialCoupon": "Cupón especial",
+    "myCoupons": "Mis Cupones",
+    "clearHistoryTooltip": "Borrar historial",
+    "noCouponsTitle": "No has ganado cupones aún",
+    "noCouponsSubtitle": "Usa \"Rasca y Gana\" para obtener cupones",
+    "couponsWon": "Has ganado {count, plural, =1{1 cupón} other{{count} cupones}}",
+    "@couponsWon": {
+        "placeholders": {
+            "count": { "type": "int" }
+        }
+    },
+    "wonDate": "Ganado: {date}",
+    "@wonDate": {
+        "placeholders": {
+            "date": { "type": "String" }
+        }
+    },
+    "activeStatus": "Activo",
+    "mapViewTitle": "Vista de Mapa",
+    "mapsDisabled": "(Integración de Google Maps deshabilitada)",
+    "errorTitle": "Error",
+    "noProductsAvailable": "No hay productos disponibles en este momento"
+}

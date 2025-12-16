@@ -1,0 +1,489 @@
+{
+    "@@locale": "en",
+    "appTitle": "Pizzeria UI",
+    "@appTitle": {
+        "description": "The title of the application"
+    },
+    "loginTitle": "Welcome Back",
+    "@loginTitle": {
+        "description": "Title of the login screen"
+    },
+    "loginSubtitle": "Enter your credentials to continue",
+    "@loginSubtitle": {
+        "description": "Subtitle of the login screen"
+    },
+    "emailLabel": "Email",
+    "@emailLabel": {
+        "description": "Label for the email field"
+    },
+    "passwordLabel": "Password",
+    "@passwordLabel": {
+        "description": "Label for the password field"
+    },
+    "loginButton": "Login",
+    "@loginButton": {
+        "description": "Text for the login button"
+    },
+    "forgotPassword": "Forgot your password?",
+    "@forgotPassword": {
+        "description": "Text for password recovery"
+    },
+    "dontHaveAccount": "Don't have an account?",
+    "@dontHaveAccount": {
+        "description": "Text for users without an account"
+    },
+    "register": "Register",
+    "@register": {
+        "description": "Text for the register link"
+    },
+    "welcomeTo": "Welcome to",
+    "signInTab": "SIGN IN",
+    "signUpTab": "SIGN UP",
+    "nameLabel": "Full Name",
+    "confirmPasswordLabel": "Confirm Password",
+    "orLoginWith": "Or login with",
+    "alreadyHaveAccount": "Already have an account?",
+    "loginAction": "Login",
+    "registerAction": "Register",
+    "homeAddress": "Mexico City, Mexico",
+    "searchHint": "SEARCH PIZZAS, PASTAS...",
+    "specialOffers": "SPECIAL OFFERS",
+    "specialOfferDesc": "2x1 on selected pizzas",
+    "catAll": "All",
+    "catPizzas": "Pizzas",
+    "catPastas": "Pastas",
+    "catDrinks": "Drinks",
+    "catDesserts": "Desserts",
+    "recommendations": "Recommendations for you",
+    "fullMenu": "Full Menu",
+    "cartTitle": "My Cart",
+    "cartEmpty": "Your cart is empty",
+    "cartEmptyDesc": "Add delicious pizzas!",
+    "exploreMenu": "Explore Menu",
+    "extrasLabel": "Extras: ",
+    "estimatedTime": "Estimated time: 25-35 min",
+    "couponHint": "Coupon code",
+    "applyCoupon": "Apply",
+    "couponApplied": "Coupon {code} applied: {desc}",
+    "@couponApplied": {
+        "placeholders": {
+            "code": { "type": "String" },
+            "desc": { "type": "String" }
+        }
+    },
+    "enterCoupon": "Please enter a coupon code",
+    "couponRemoved": "Coupon removed",
+    "subtotal": "Subtotal",
+    "deliveryFee": "Delivery Fee",
+    "discount": "Discount",
+    "total": "Total",
+    "confirmOrder": "Confirm Order",
+    "settingsTitle": "Settings",
+    "editProfile": "Edit Profile",
+    "appSettings": "App Settings",
+    "darkMode": "Dark Mode",
+    "darkModeSubtitle": "Toggle between light and dark mode",
+    "notifications": "Notifications",
+    "notificationsSubtitle": "Configure push notifications",
+    "language": "Language",
+    "languageSubtitle": "English",
+    "comingSoonLanguage": "Coming soon: Language change",
+    "preferences": "Preferences",
+    "savedAddresses": "Saved Addresses",
+    "savedAddressesSubtitle": "Manage delivery addresses",
+    "purchaseHistory": "Purchase History",
+    "purchaseHistorySubtitle": "View past orders and favorites",
+    "helpSupport": "Help & Support",
+    "helpCenter": "Help Center",
+    "helpCenterSubtitle": "FAQ and support",
+    "comingSoonHelp": "Coming soon: Help center",
+    "about": "About",
+    "version": "Version {version}",
+    "@version": {
+        "placeholders": {
+            "version": { "type": "String" }
+        }
+    },
+    "logout": "Logout",
+    "logoutSubtitle": "Exit the application",
+    "aboutDescription": "Pizza ordering app for Napoli Restaurant.",
+    "aboutFooter": "Developed with Flutter and lots of ❤️",
+    "logoutConfirmation": "Are you sure you want to logout?",
+    "cancel": "Cancel",
+    "sessionClosed": "Session closed",
+    "save": "Save",
+    "changePhoto": "Change photo",
+    "photo": "Photo",
+    "personalInfo": "Personal Information",
+    "fullName": "Full Name",
+    "nameRequired": "Name is required",
+    "email": "Email",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Enter a valid email",
+    "phone": "Phone",
+    "phoneRequired": "Phone is required",
+    "address": "Main Address",
+    "addressRequired": "Address is required",
+    "saveChanges": "Save Changes",
+    "profileUpdated": "Profile updated successfully",
+    "photoPermissionTitle": "\"Napoli Pizza\" wants to access your photos",
+    "photoPermissionDesc": "So you can take or select a profile photo from your device.",
+    "deny": "Deny",
+    "allow": "Allow",
+    "photoPermissionNote": "We will only access photos you select",
+    "changeProfilePhoto": "Change profile photo",
+    "takePhoto": "Take photo",
+    "takePhotoSubtitle": "Use device camera",
+    "chooseGallery": "Choose from gallery",
+    "chooseGallerySubtitle": "Select from your photos",
+    "useInitials": "Use initials",
+    "useInitialsSubtitle": "Revert to initials avatar",
+    "photoCaptured": "Photo captured successfully",
+    "photoSelected": "Photo selected from gallery",
+    "usingInitials": "Using initials as avatar",
+    "myOrders": "My Orders",
+    "noOrders": "No orders yet",
+    "orderNumber": "Order #{id}",
+    "@orderNumber": {
+        "placeholders": {
+            "id": { "type": "String" }
+        }
+    },
+    "orderDate": "{date}",
+    "@orderDate": {
+        "placeholders": {
+            "date": { "type": "DateTime", "format": "yMd" }
+        }
+    },
+    "orderItem": "{quantity}x {name}",
+    "@orderItem": {
+        "placeholders": {
+            "quantity": { "type": "int" },
+            "name": { "type": "String" }
+        }
+    },
+    "moreItems": "+ {count} more...",
+    "@moreItems": {
+        "placeholders": {
+            "count": { "type": "int" }
+        }
+    },
+    "statusPending": "Pending",
+    "statusConfirmed": "Confirmed",
+    "statusPreparing": "Preparing",
+    "statusDelivering": "Delivering",
+    "statusCompleted": "Completed",
+    "statusCancelled": "Cancelled",
+    "addedToCart": "Added to cart",
+    "productNotFound": "Product not found",
+    "quantity": "Quantity",
+    "customizeOrder": "Customize your order",
+    "specialInstructions": "Special Instructions",
+    "specialInstructionsHint": "Ex: No onions, well done, etc.",
+    "addToCart": "Add to Cart",
+    "errorProcessingOrder": "Error processing order: {error}",
+    "@errorProcessingOrder": {
+        "placeholders": {
+            "error": { "type": "String" }
+        }
+    },
+    "selectAddressOrManual": "Please select a saved address or complete the address manually",
+    "enterPhoneNumber": "Please complete the phone number",
+    "completeTransferData": "Please complete the transfer data and attach the receipt",
+    "confirmOrder": "Confirm Order",
+    "orderSummary": "Order Summary",
+    "extras": "Extras: {extras}",
+    "@extras": {
+        "placeholders": {
+            "extras": { "type": "String" }
+        }
+    },
+    "subtotal": "Subtotal:",
+    "deliveryFee": "Delivery:",
+    "discountWithCode": "Discount ({code}):",
+    "@discountWithCode": {
+        "placeholders": {
+            "code": { "type": "String" }
+        }
+    },
+    "total": "Total:",
+    "estimatedTime": "Estimated time: 25-35 min",
+    "deliveryAddress": "Delivery Address",
+    "change": "Change",
+    "useDifferentAddress": "Use different address",
+    "useSavedAddresses": "Use saved addresses",
+    "phone": "Phone *",
+    "phoneHint": "Ex: +52 55 1234-5678",
+    "specialNotes": "Special notes (optional)",
+    "specialNotesHint": "Ex: Ring bell 3 times, leave at door, etc.",
+    "defaultLabel": "Default",
+    "manualAddressInfo": "Filling out an address different from your saved addresses",
+    "street": "Street *",
+    "streetHint": "Ex: Main Street",
+    "number": "Number *",
+    "numberHint": "Ex: 123",
+    "apartment": "Apt/Dept (optional)",
+    "apartmentHint": "Ex: Apt 5B",
+    "simulationMessage": "This is a simulation payment. No charge will be made.",
+    "orderDelivered": "Order Delivered!",
+    "rateExperience": "How was your experience?",
+    "later": "Later",
+    "orderStatus": "Order Status",
+    "exitTracking": "Exit tracking?",
+    "exitTrackingMessage": "Your order will continue in process. You can return at any time.",
+    "realTimeMap": "Real-time map",
+    "yourDeliveryMan": "Your delivery person",
+    "statusReceived": "Thanks for your order! We are working on it.",
+    "statusPreparing": "Our chefs are preparing your food with love.",
+    "statusOnWay": "Almost there! Your food is on the way.",
+    "statusEnjoy": "Enjoy your delicious food!",
+    "bankTransfer": "Bank Transfer",
+    "instructions": "Instructions",
+    "transferInstructions": "Make the transfer with the provided bank details and attach the receipt to confirm your order.",
+    "transferAmount": "Amount to Transfer",
+    "bankData": "Bank Details",
+    "bank": "Bank",
+    "holder": "Holder",
+    "clabe": "CLABE",
+    "account": "Account",
+    "concept": "Concept",
+    "transferReceipt": "Transfer Receipt",
+    "gallery": "Gallery",
+    "camera": "Camera",
+    "receiptAttached": "Receipt Attached",
+    "receiptLoaded": "Your receipt has been uploaded successfully",
+    "important": "Important: Your order will be processed once we validate your transfer. This may take between 5 and 30 minutes.",
+    "confirmTransfer": "Confirm Transfer",
+    "attachReceiptError": "Please attach the transfer receipt",
+    "clipboardCopied": "{label} copied to clipboard",
+    "@clipboardCopied": {
+        "placeholders": {
+            "label": { "type": "String" }
+        }
+    },
+    "imagePickerPlaceholder": "Image function available when image_picker is installed",
+    "cameraPlaceholder": "Camera function available when image_picker is installed",
+    "outOfHours": "Out of Hours",
+    "bankDataUnavailable": "Bank details are only available during our business hours.",
+    "nextOpening": "Next opening:",
+    "back": "Back",
+    "exit": "Exit",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "enterPassword": "Enter your password",
+    "passwordMinLength": "Minimum 6 characters",
+    "registerScreenTitle": "Register",
+    "confirmPasswordRequired": "Confirm your password",
+    "createAccount": "CREATE ACCOUNT",
+    "splashTitle": "Napoli Pizzeria",
+    "splashSlogan": "The best pizzas in town",
+    "general": "General",
+    "permissionRequired": "To receive notifications, you need to grant system permissions.",
+    "allNotifications": "All Notifications",
+    "allNotificationsSubtitle": "Enable or disable all notifications",
+    "notificationTypes": "Notification Types",
+    "orderUpdates": "Order Updates",
+    "orderUpdatesSubtitle": "Order status and deliveries",
+    "promotions": "Promotions",
+    "promotionsSubtitle": "Discounts and special offers",
+    "newProducts": "New Products",
+    "newProductsSubtitle": "Alerts for new menu products",
+    "deliveryReminders": "Delivery Reminders",
+    "deliveryRemindersSubtitle": "Alerts when order is nearby",
+    "chatMessages": "Chat Messages",
+    "chatMessagesSubtitle": "Customer service notifications",
+    "weeklyOffers": "Weekly Offers",
+    "weeklyOffersSubtitle": "Special weekend promotions",
+    "appUpdates": "App Updates",
+    "appUpdatesSubtitle": "New versions and features",
+    "soundVibration": "Sound & Vibration",
+    "sound": "Sound",
+    "soundSubtitle": "Play sound with notifications",
+    "notificationTone": "Notification Tone",
+    "vibration": "Vibration",
+    "vibrationSubtitle": "Vibrate with notifications",
+    "doNotDisturb": "Do Not Disturb",
+    "quietHours": "Quiet Hours",
+    "quietHoursSubtitle": "Do not receive notifications during certain hours",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "importantNotificationsInfo": "Important notifications like order updates will always be shown, even in silent mode.",
+    "defaultTone": "Default",
+    "bellTone": "Bell",
+    "chimeTone": "Chime",
+    "selectTone": "Select Tone",
+    "notificationLabel": "Notification",
+    "addAddress": "Add Address",
+    "noSavedAddresses": "No saved addresses",
+    "noSavedAddressesDesc": "Add addresses to order faster",
+    "addFirstAddress": "Add First Address",
+    "setAsDefault": "Set as default",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteAddressTitle": "Delete address",
+    "deleteAddressConfirmation": "Are you sure you want to delete \"{label}\"?",
+    "@deleteAddressConfirmation": {
+        "placeholders": {
+            "label": { "type": "String" }
+        }
+    },
+    "addressDeleted": "Address \"{label}\" deleted",
+    "@addressDeleted": {
+        "placeholders": {
+            "label": { "type": "String" }
+        }
+    },
+    "editAddressTitle": "Edit Address",
+    "addAddressTitle": "Add Address",
+    "labelLabel": "Label *",
+    "labelHint": "Ex: Home, Work, University, etc.",
+    "addressLabel": "Address *",
+    "addressHint": "Street, number, colony",
+    "cityLabel": "City *",
+    "cityHint": "City, State",
+    "detailsLabel": "Additional details",
+    "detailsHint": "References, house color, etc.",
+    "setAsDefaultLabel": "Set as default",
+    "updateAction": "Update",
+    "addAction": "Add",
+    "addressUpdated": "Address updated",
+    "addressAdded": "Address added",
+    "addressSetAsDefault": "{label} is now your default address",
+    "@addressSetAsDefault": {
+        "placeholders": {
+            "label": { "type": "String" }
+        }
+    },
+    "paymentMethodsTitle": "Payment Methods",
+    "addCard": "Add Card",
+    "noPaymentMethods": "No payment methods",
+    "noPaymentMethodsDesc": "Add a card to pay faster",
+    "addFirstCard": "Add First Card",
+    "alternativeMethods": "Alternative Methods",
+    "cash": "Cash",
+    "cashSubtitle": "Pay upon delivery",
+    "cashAvailable": "Cash payment available upon ordering",
+    "bankTransfer": "Bank Transfer",
+    "bankTransferSubtitle": "SPEI and instant transfers",
+    "bankTransferComingSoon": "Coming Soon: Transfer payments",
+    "cardHolderLabel": "CARD HOLDER",
+    "expiryLabel": "EXPIRES",
+    "deletePaymentMethodTitle": "Delete payment method",
+    "deletePaymentMethodConfirmation": "Are you sure you want to delete the {brand} card ending in {last4}?",
+    "@deletePaymentMethodConfirmation": {
+        "placeholders": {
+            "brand": { "type": "String" },
+            "last4": { "type": "String" }
+        }
+    },
+    "paymentMethodDeleted": "Card {brand} deleted",
+    "@paymentMethodDeleted": {
+        "placeholders": {
+            "brand": { "type": "String" }
+        }
+    },
+    "editCardTitle": "Edit Card",
+    "addCardTitle": "Add Card",
+    "cardNumberLabel": "Card number *",
+    "cardHolderNameLabel": "Cardholder name *",
+    "expiryDateLabel": "Expiry *",
+    "cvvLabel": "CVV *",
+    "securityInfo": "Your data is protected with bank-level encryption",
+    "cardUpdated": "Card updated",
+    "cardAdded": "Card added successfully",
+    "cardSetAsDefault": "{brand} ending in {last4} is now default",
+    "@cardSetAsDefault": {
+        "placeholders": {
+            "brand": { "type": "String" },
+            "last4": { "type": "String" }
+        }
+    },
+    "purchaseHistoryTitle": "Purchase History",
+    "recentTab": "Recent",
+    "favoritesTab": "Favorites",
+    "filterAll": "All",
+    "filterDelivered": "Delivered",
+    "filterInProgress": "In Progress",
+    "filterCancelled": "Cancelled",
+    "noOrdersInProgress": "No orders in progress",
+    "noOrdersCancelled": "No cancelled orders",
+    "noOrdersDelivered": "No delivered orders",
+    "noOrders": "You haven't placed any orders",
+    "ordersEmptyDesc": "When you place orders they will appear here",
+    "moreProducts": "+ {count} more product(s)",
+    "@moreProducts": {
+        "placeholders": {
+            "count": { "type": "int" }
+        }
+    },
+    "totalLabel": "Total: ",
+    "rateOrder": "Rate order",
+    "yourRating": "Your rating: {rating}/5",
+    "@yourRating": {
+        "placeholders": {
+            "rating": { "type": "int" }
+        }
+    },
+    "trackOrder": "Track",
+    "orderAgain": "Order Again",
+    "orderCancelled": "Order cancelled",
+    "statusDelivered": "Delivered",
+    "statusInProgress": "In Progress",
+    "statusCancelled": "Cancelled",
+    "orderedTimes": "Ordered {count} times",
+    "@orderedTimes": {
+        "placeholders": {
+            "count": { "type": "int" }
+        }
+    },
+    "yourFavorites": "Your Favorites",
+    "favoritesDesc": "Products you've ordered more than once",
+    "orderFavorites": "Order My Favorites",
+    "timeAgoMinutes": "{minutes} min ago",
+    "@timeAgoMinutes": {
+        "placeholders": {
+            "minutes": { "type": "int" }
+        }
+    },
+    "timeAgoHours": "{hours}h ago",
+    "@timeAgoHours": {
+        "placeholders": {
+            "hours": { "type": "int" }
+        }
+    },
+    "yesterday": "Yesterday",
+    "timeAgoDays": "{days} days ago",
+    "@timeAgoDays": {
+        "placeholders": {
+            "days": { "type": "int" }
+        }
+    },
+    "confirmTitle": "Confirm",
+    "clearHistoryConfirmation": "Do you want to clear all coupon history?",
+    "clearAll": "Clear All",
+    "historyCleared": "History cleared",
+    "discount10": "10% discount",
+    "discount20": "20% discount",
+    "discount50": "50% discount",
+    "specialCoupon": "Special Coupon",
+    "myCoupons": "My Coupons",
+    "clearHistoryTooltip": "Clear history",
+    "noCouponsTitle": "You haven't won any coupons yet",
+    "noCouponsSubtitle": "Use \"Scratch & Win\" to get coupons",
+    "couponsWon": "You have won {count, plural, =1{1 coupon} other{{count} coupons}}",
+    "@couponsWon": {
+        "placeholders": {
+            "count": { "type": "int" }
+        }
+    },
+    "wonDate": "Won: {date}",
+    "@wonDate": {
+        "placeholders": {
+            "date": { "type": "String" }
+        }
+    },
+    "activeStatus": "Active",
+    "mapViewTitle": "Map View",
+    "mapsDisabled": "(Google Maps integration disabled)",
+    "errorTitle": "Error",
+    "noProductsAvailable": "No products available at the moment"
+}

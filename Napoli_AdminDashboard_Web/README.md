@@ -1,0 +1,115 @@
+## Front-end Barrio Napoli
+
+[![React](https://img.shields.io/badge/-ReactJs-61DAFB?logo=react&logoColor=black&style=for-the-badge)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/-Vite-purple?logo=vite&logoColor=white&style=for-the-badge)](https://vitejs.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=TypeScript&logoColor=white&style=for-the-badge)](https://www.typescriptlang.org/)
+[![Zod](https://img.shields.io/badge/zod-0E2E58?logo=zod&logoColor=white&style=for-the-badge)](https://zod.dev)
+[![shadcn/ui](https://img.shields.io/badge/shadcnui-black?logo=shadcnui&logoColor=white&style=for-the-badge)](https://ui.shadcn.com)
+[![Tailwind](https://img.shields.io/badge/tailwindcss-007FFF?logo=tailwindcss&logoColor=white&style=for-the-badge)](https://tailwindcss.com)
+[![ReactQuery](https://img.shields.io/badge/reactquery-ffa500?logo=reactquery&logoColor=black&style=for-the-badge)](https://tanstack.com/query/v3)
+[![Vitest](https://img.shields.io/badge/vitest-7CFC00?logo=vitest&logoColor=black&style=for-the-badge)](https://vitest.dev)
+[![MSW](https://img.shields.io/badge/msw-orange?logo=msw&logoColor=black&style=for-the-badge)](https://mswjs.io)
+[![PlayWright](https://img.shields.io/badge/playwright-green?logo=playwright&logoColor=red&style=for-the-badge)](https://playwright.dev)
+
+## 1. Introduction
+
+### 1.1 Challenge Overview
+
+
+This project focuses on exercising both the concepts we saw about React, as well as communicating with APIs via HTTP requests. Also present tests in frontend application. Pizzeria management application (administrator dashboard) using Vite, React Router DOM, React Hook Form, shadcn/ui, React Query, Vitest and more!
+
+![Demo app](https://github.com/fabiobatoni/Barrio-Napoli/blob/main/public/Barrio-Napoli.gif?raw=true)
+
+## 2. Getting Started for Developers
+
+To set up a local copy of this repository:
+
+- For SSH (recommended for secure, key-based authentication), use:
+
+  ```bash
+  git@github.com:fabiobatoni/Barrio-Napoli.git
+  ```
+
+- For HTTPS (simpler setup, ideal for quick trials), use:
+
+  ```bash
+  https://github.com/fabiobatoni/Barrio-Napoli.git
+  ```
+
+### 2.1 Installation
+
+Follow these steps to set up the Barrio Napoli environment on your local
+machine:
+
+1. **Clone the Repository and Change Directory**
+
+```bash
+cd Barrio-Napoli
+```
+
+2. **Install Project Dependencies**
+
+In the project directory, run:
+
+```bash
+pnpm install
+```
+
+### 2.2 Local Development
+
+**Prerequisite**
+
+- Before you begin, check the version of `node` by running the command `node
+--version`. According to "Minimum Runtime Requirements", **TypeScript** requires
+`node` version 18.17.1 or later.
+
+- This project was used as a package manager, `pnpm`
+- Before starting, make sure you have `pnpm` installed
+
+To start the Barrio Napoli, follow these steps:
+
+1. **Run the Application**
+
+Use the commands to run:
+
+- Development environment
+
+```bash
+pnpm run dev
+```
+
+1.1. **Run tests**
+
+```bash
+pnpm run test
+```
+
+1.2. **Run test environment**
+
+```bash
+pnpm dev:test
+```
+
+1.3. **Run Playwright test**
+
+```bash
+// results in console
+pnpm playwright test 
+
+// results in ui
+pnpm playwright test --ui
+```
+
+
+2. **Backend the application**
+
+For this project, the pizza-api backend was used as a base:
+
+- https://github.com/rocketseat-education/pizzashop-api
+
+
+3. **Access the Application**
+
+Once the server is running, open your preferred web browser and navigate to:
+
+- [http://localhost:5173](http://localhost:5173)

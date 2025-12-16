@@ -1,0 +1,9 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "inspiracion/**"
+    - "ideas-diseno/**"
+  errors:
+    # Radio groupValue/onChanged deprecated in Flutter 3.32+ - will migrate to RadioGroup in future
+    deprecated_member_use: ignore
