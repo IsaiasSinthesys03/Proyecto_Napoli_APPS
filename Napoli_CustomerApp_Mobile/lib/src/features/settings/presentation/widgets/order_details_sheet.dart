@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:napoli_app_v1/l10n/arb/app_localizations.dart';
+import 'package:napoli_app_v1/l10n/app_localizations.dart';
 import 'package:napoli_app_v1/src/core/utils/date_formatter.dart';
 import 'package:napoli_app_v1/src/core/utils/payment_icon_resolver.dart';
 import 'package:napoli_app_v1/src/features/orders/presentation/widgets/order_status_chip.dart';

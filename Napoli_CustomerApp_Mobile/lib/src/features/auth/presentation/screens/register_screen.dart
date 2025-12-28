@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:napoli_app_v1/src/core/core_ui/widgets/app_scaffold.dart';
 import 'package:napoli_app_v1/src/core/core_ui/theme.dart';
 import 'package:napoli_app_v1/src/features/home/presentation/screens/home_screen.dart';
-import 'package:napoli_app_v1/l10n/arb/app_localizations.dart';
+import 'package:napoli_app_v1/l10n/app_localizations.dart';
 
 /// Simple standalone Register screen. The app's primary login UI uses the
 /// combined tabbed screen but this file provides an independent registration

@@ -21,122 +21,138 @@ class SupabaseProductDataSource implements ProductRemoteDataSource {
 
   @override
   Future<List<CategoryModel>> getCategories() async {
+    print('🔍 DEBUG - Starting getCategories');
+
     final client = SupabaseConfig.client;
 
-    SupabaseLogger.logQuery(
-      'categories',
-      'SELECT',
-      filters: {
-        'restaurant_id': _configService.restaurantId,
-        'is_active': true,
-      },
-    );
-
     try {
-      final data = await client
-          .from('categories')
-          .select()
-          .eq('restaurant_id', _configService.restaurantId)
-          .eq('is_active', true)
-          .order('display_order');
+      print('🔍 DEBUG - Calling get_categories stored procedure');
+      print('📦 DATA - restaurant_id: ${_configService.restaurantId}');
 
-      SupabaseLogger.logResponse('categories', data);
-      return (data as List).map((cat) => CategoryModel.fromJson(cat)).toList();
-    } catch (e) {
-      SupabaseLogger.logError('categories', 'SELECT', e);
+      final response = await client.rpc(
+        'get_categories',
+        params: {'p_restaurant_id': _configService.restaurantId},
+      );
+
+      print('✅ SUCCESS - Stored procedure response received');
+      print('📦 DATA - Response type: ${response.runtimeType}');
+
+      if (response == null) {
+        print('📦 DATA - No categories found, returning empty list');
+        return [];
+      }
+
+      final categoriesData = response as List;
+      print('📦 DATA - Parsing ${categoriesData.length} categories');
+
+      final categories = categoriesData
+          .map((cat) => CategoryModel.fromJson(cat as Map<String, dynamic>))
+          .toList();
+
+      print('✅ SUCCESS - Categories parsed successfully');
+      return categories;
+    } catch (e, stackTrace) {
+      print('❌ ERROR - Exception in getCategories: $e');
+      print('❌ ERROR - Stack trace: $stackTrace');
+      SupabaseLogger.logError('get_categories', 'RPC', e);
       rethrow;
     }
   }
 
   @override
   Future<List<ProductModel>> getProducts() async {
+    print('🔍 DEBUG - Starting getProducts');
+
     final client = SupabaseConfig.client;
 
-    SupabaseLogger.logQuery(
-      'products',
-      'SELECT',
-      select: '*, category:categories(id, name)',
-      filters: {
-        'restaurant_id': _configService.restaurantId,
-        'is_available': true,
-      },
-    );
-
     try {
-      // Fetch products with their category info
-      final productsData = await client
-          .from('products')
-          .select('''
-            *,
-            category:categories(id, name)
-          ''')
-          .eq('restaurant_id', _configService.restaurantId)
-          .eq('is_available', true)
-          .order('display_order');
+      print('🔍 DEBUG - Calling get_menu_items stored procedure');
+      print('📦 DATA - restaurant_id: ${_configService.restaurantId}');
 
-      SupabaseLogger.logResponse('products', productsData);
-
-      // Fetch all product addons for this restaurant
-      SupabaseLogger.logQuery(
-        'product_addons',
-        'SELECT',
-        select: 'product_id, addon:addons!inner(*)',
+      final response = await client.rpc(
+        'get_menu_items',
+        params: {'p_restaurant_id': _configService.restaurantId},
       );
 
-      final addonRelations = await client.from('product_addons').select('''
-            product_id,
-            addon:addons!inner(*)
-          ''');
+      print('✅ SUCCESS - Stored procedure response received');
+      print('📦 DATA - Response type: ${response.runtimeType}');
 
-      SupabaseLogger.logResponse('product_addons', addonRelations);
-
-      // Group addons by product_id
-      final addonsByProduct = <String, List<Map<String, dynamic>>>{};
-      for (final relation in addonRelations as List) {
-        final productId = relation['product_id'] as String;
-        final addon = relation['addon'] as Map<String, dynamic>;
-        addonsByProduct.putIfAbsent(productId, () => []).add(addon);
+      if (response == null) {
+        print('📦 DATA - No products found, returning empty list');
+        return [];
       }
 
-      return (productsData as List).map((product) {
-        final productId = product['id'] as String;
-        final productAddons = addonsByProduct[productId] ?? [];
+      final productsData = response as List;
+      print('📦 DATA - Parsing ${productsData.length} products');
 
-        return ProductModel.fromSupabase(product, productAddons);
+      final products = productsData.map((productJson) {
+        final product = productJson as Map<String, dynamic>;
+
+        // Extract addons from the response
+        final addonsJson =
+            (product['addons'] as List?)
+                ?.map((addon) => addon as Map<String, dynamic>)
+                .toList() ??
+            [];
+
+        return ProductModel.fromSupabase(product, addonsJson);
       }).toList();
-    } catch (e) {
-      SupabaseLogger.logError('products', 'SELECT', e);
+
+      print('✅ SUCCESS - Products parsed successfully');
+      print('📦 DATA - Total products: ${products.length}');
+
+      return products;
+    } catch (e, stackTrace) {
+      print('❌ ERROR - Exception in getProducts: $e');
+      print('❌ ERROR - Stack trace: $stackTrace');
+      SupabaseLogger.logError('get_menu_items', 'RPC', e);
       rethrow;
     }
   }
 
   @override
   Future<ProductModel?> getProductById(String id) async {
+    print('🔍 DEBUG - Starting getProductById for id: $id');
+
     final client = SupabaseConfig.client;
 
-    final productData = await client
-        .from('products')
-        .select('''
-          *,
-          category:categories(id, name)
-        ''')
-        .eq('id', id)
-        .maybeSingle();
+    try {
+      print('🔍 DEBUG - Calling get_product_details stored procedure');
 
-    if (productData == null) return null;
+      final response = await client.rpc(
+        'get_product_details',
+        params: {'p_product_id': id},
+      );
 
-    // Fetch addons for this product
-    final addonRelations = await client
-        .from('product_addons')
-        .select('''
-          addon:addons!inner(*)
-        ''')
-        .eq('product_id', id);
+      print('✅ SUCCESS - Stored procedure response received');
+      print('📦 DATA - Response type: ${response.runtimeType}');
 
-    final addons = (addonRelations as List)
-        .map((r) => r['addon'] as Map<String, dynamic>)
-        .toList();
+      if (response == null) {
+        print('📦 DATA - Product not found');
+        return null;
+      }
 
-    return ProductModel.fromSupabase(productData, addons);
+      final productData = response as Map<String, dynamic>;
+      print('📦 DATA - Parsing product details');
+
+      // Extract addons from the response
+      final addonsJson =
+          (productData['addons'] as List?)
+              ?.map((addon) => addon as Map<String, dynamic>)
+              .toList() ??
+          [];
+
+      final product = ProductModel.fromSupabase(productData, addonsJson);
+
+      print('✅ SUCCESS - Product details parsed successfully');
+      print('📦 DATA - Product: ${product.name}');
+
+      return product;
+    } catch (e, stackTrace) {
+      print('❌ ERROR - Exception in getProductById: $e');
+      print('❌ ERROR - Stack trace: $stackTrace');
+      SupabaseLogger.logError('get_product_details', 'RPC', e);
+      rethrow;
+    }
   }
 }

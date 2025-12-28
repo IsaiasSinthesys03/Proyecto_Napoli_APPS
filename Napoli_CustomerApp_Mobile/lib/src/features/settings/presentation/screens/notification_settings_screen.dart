@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:napoli_app_v1/l10n/arb/app_localizations.dart';
+import 'package:napoli_app_v1/l10n/app_localizations.dart';
 import 'package:napoli_app_v1/src/features/settings/presentation/widgets/notification_settings/general_section.dart';
 import 'package:napoli_app_v1/src/features/settings/presentation/widgets/notification_settings/notification_types_section.dart';
 import 'package:napoli_app_v1/src/features/settings/presentation/widgets/notification_settings/quiet_hours_section.dart';

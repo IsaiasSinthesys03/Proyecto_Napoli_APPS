@@ -1,0 +1,90 @@
+-- ============================================================================
+-- STORED PROCEDURE: get_customer_orders
+-- ============================================================================
+-- Propósito: Obtener todas las órdenes de un cliente
+-- Parámetros:
+--   - p_customer_id: ID del cliente
+--   - p_restaurant_id: ID del restaurante
+-- Retorna: JSON array con las órdenes y sus items
+-- Autor: AI Assistant
+-- Fecha: 2024-12-26
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION get_customer_orders(
+  p_customer_id UUID,
+  p_restaurant_id UUID
+)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_result JSON;
+BEGIN
+  -- Log inicio de función
+  RAISE NOTICE '🔍 DEBUG - get_customer_orders called for customer_id: %', p_customer_id;
+  
+  -- Construir JSON con órdenes e items
+  SELECT json_agg(
+    json_build_object(
+      'id', o.id,
+      'restaurant_id', o.restaurant_id,
+      'customer_id', o.customer_id,
+      'status', o.status,
+      'subtotal_cents', o.subtotal_cents,
+      'delivery_fee_cents', o.delivery_fee_cents,
+      'discount_cents', o.discount_cents,
+      'total_cents', o.total_cents,
+      'payment_method', o.payment_method,
+      'order_type', o.order_type,
+      'address_snapshot', o.address_snapshot,
+      'customer_snapshot', o.customer_snapshot,
+      'created_at', o.created_at,
+      'updated_at', o.updated_at,
+      'order_items', COALESCE((
+        SELECT json_agg(
+          json_build_object(
+            'id', oi.id,
+            'order_id', oi.order_id,
+            'product_id', oi.product_id,
+            'product_name', oi.product_name,
+            'quantity', oi.quantity,
+            'unit_price_cents', oi.unit_price_cents,
+            'subtotal_cents', oi.subtotal_cents,
+            'addons_snapshot', oi.addons_snapshot
+          )
+        )
+        FROM order_items oi
+        WHERE oi.order_id = o.id
+      ), '[]'::json)
+    )
+    ORDER BY o.created_at DESC
+  )
+  INTO v_result
+  FROM orders o
+  WHERE o.customer_id = p_customer_id
+    AND o.restaurant_id = p_restaurant_id;
+  
+  -- Si no hay órdenes, retornar array vacío
+  IF v_result IS NULL THEN
+    v_result := '[]'::json;
+    RAISE NOTICE '📦 DATA - No orders found for customer';
+  ELSE
+    RAISE NOTICE '✅ SUCCESS - Orders retrieved successfully';
+  END IF;
+  
+  RETURN v_result;
+  
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE NOTICE '❌ ERROR - Exception in get_customer_orders: %', SQLERRM;
+    RAISE EXCEPTION 'Error al obtener órdenes: %', SQLERRM;
+END;
+$$;
+
+-- Comentario de la función
+COMMENT ON FUNCTION get_customer_orders(UUID, UUID) IS 
+'Obtiene todas las órdenes de un cliente con sus items';
+
+-- Ejemplo de uso:
+-- SELECT get_customer_orders('customer-uuid', 'restaurant-uuid');

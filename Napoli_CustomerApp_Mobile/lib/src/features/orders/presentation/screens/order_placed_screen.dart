@@ -6,7 +6,7 @@ import 'package:napoli_app_v1/src/core/core_ui/widgets/order_stepper.dart';
 import 'package:napoli_app_v1/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:napoli_app_v1/src/di.dart';
 
-import 'package:napoli_app_v1/l10n/arb/app_localizations.dart';
+import 'package:napoli_app_v1/l10n/app_localizations.dart';
 
 class OrderPlacedScreen extends StatefulWidget {
   const OrderPlacedScreen({super.key});

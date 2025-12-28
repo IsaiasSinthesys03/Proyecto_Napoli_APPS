@@ -24,79 +24,188 @@ class SupabaseAuthDataSource implements AuthRemoteDataSource {
 
   @override
   Future<UserModel> login(String email, String password) async {
+    print('🔍 DEBUG - Starting login for email: $email');
+
     final client = SupabaseConfig.client;
 
-    // Authenticate with Supabase Auth
-    final authResponse = await client.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
-
-    if (authResponse.user == null) {
-      throw Exception('Error de autenticación');
-    }
-
-    // Fetch customer profile from customers table
-    final customerData = await client
-        .from('customers')
-        .select()
-        .eq('email', email)
-        .eq('restaurant_id', _configService.restaurantId)
-        .limit(1)
-        .maybeSingle();
-
-    if (customerData == null) {
-      // Create customer if doesn't exist
-      return _createCustomerFromAuth(
-        authResponse.user!.id,
-        email,
-        email.split('@')[0],
+    try {
+      // Step 1: Authenticate with Supabase Auth
+      print('🔍 DEBUG - Calling Supabase Auth signInWithPassword');
+      final authResponse = await client.auth.signInWithPassword(
+        email: email,
+        password: password,
       );
+
+      if (authResponse.user == null) {
+        print('❌ ERROR - Auth returned null user');
+        throw Exception('Error de autenticación');
+      }
+
+      print('✅ SUCCESS - Auth successful for user: ${authResponse.user!.id}');
+
+      // Step 2: Call stored procedure to get customer profile
+      print('🔍 DEBUG - Calling login_customer stored procedure');
+      print('📦 DATA - restaurant_id: ${_configService.restaurantId}');
+
+      final response = await client.rpc(
+        'login_customer',
+        params: {
+          'p_email': email,
+          'p_restaurant_id': _configService.restaurantId,
+        },
+      );
+
+      print('✅ SUCCESS - Stored procedure response received');
+      print('📦 DATA - Response type: ${response.runtimeType}');
+
+      if (response == null) {
+        print(
+          '❌ ERROR - Customer not found in database, creating new customer',
+        );
+        // Create customer if doesn't exist
+        return _createCustomerFromAuth(
+          authResponse.user!.id,
+          email,
+          email.split('@')[0],
+        );
+      }
+
+      print('📦 DATA - Parsing customer profile from response');
+
+      // Parse the JSON response
+      final customerData = response as Map<String, dynamic>;
+
+      // Parse addresses
+      final addressesJson = customerData['addresses'] as List? ?? [];
+      final addresses = addressesJson
+          .map(
+            (addr) => AddressModel(
+              id: addr['id'],
+              label: addr['label'] ?? '',
+              address: addr['street_address'] ?? '',
+              city: addr['city'] ?? '',
+              details: addr['address_details'],
+              isDefault: addr['is_default'] ?? false,
+              latitude: addr['latitude']?.toDouble(),
+              longitude: addr['longitude']?.toDouble(),
+            ),
+          )
+          .toList();
+
+      print('📦 DATA - Parsed ${addresses.length} addresses');
+
+      // Parse payment methods
+      final paymentMethodsJson = customerData['payment_methods'] as List? ?? [];
+      final paymentMethods = paymentMethodsJson
+          .map(
+            (pm) => PaymentMethodModel(
+              id: pm['id'],
+              type: _parsePaymentType(pm['type']),
+              cardNumber: pm['card_last_four'] != null
+                  ? '**** **** **** ${pm['card_last_four']}'
+                  : null,
+              cardHolder: pm['card_holder_name'],
+              cardBrand: pm['card_brand'],
+              isDefault: pm['is_default'] ?? false,
+            ),
+          )
+          .toList();
+
+      print('📦 DATA - Parsed ${paymentMethods.length} payment methods');
+
+      final user = UserModel(
+        id: customerData['id'],
+        name: customerData['name'] ?? '',
+        email: customerData['email'] ?? '',
+        phone: customerData['phone'],
+        photoUrl: customerData['photo_url'],
+        savedAddresses: addresses,
+        savedCards: paymentMethods,
+        loyaltyPoints: customerData['loyalty_points'] ?? 0,
+        loyaltyTier: customerData['loyalty_tier'],
+      );
+
+      print('✅ SUCCESS - User profile parsed successfully');
+      print('📦 DATA - User: ${user.name} (${user.email})');
+
+      return user;
+    } catch (e, stackTrace) {
+      print('❌ ERROR - Exception in login: $e');
+      print('❌ ERROR - Stack trace: $stackTrace');
+      SupabaseLogger.logError('login_customer', 'RPC', e);
+      rethrow;
     }
-
-    // Fetch addresses
-    final addresses = await _fetchAddresses(customerData['id']);
-
-    // Fetch payment methods
-    final paymentMethods = await _fetchPaymentMethods(customerData['id']);
-
-    return UserModel(
-      id: customerData['id'],
-      name: customerData['name'] ?? '',
-      email: customerData['email'] ?? '',
-      phone: customerData['phone'],
-      photoUrl: customerData['photo_url'],
-      savedAddresses: addresses,
-      savedCards: paymentMethods,
-      loyaltyPoints: customerData['loyalty_points'] ?? 0,
-      loyaltyTier: customerData['loyalty_tier'],
-    );
   }
 
   @override
   Future<UserModel> register(String name, String email, String password) async {
+    print('🔍 DEBUG - Starting registration for email: $email, name: $name');
+
     final client = SupabaseConfig.client;
 
     try {
-      // Register with Supabase Auth
+      // Step 1: Register with Supabase Auth
+      print('🔍 DEBUG - Calling Supabase Auth signUp');
       final authResponse = await client.auth.signUp(
         email: email,
         password: password,
       );
 
       if (authResponse.user == null) {
+        print('❌ ERROR - Auth signUp returned null user');
         throw Exception('Error al registrar usuario - auth returned null');
       }
 
-      // Create customer record
-      final user = await _createCustomerFromAuth(
-        authResponse.user!.id,
-        email,
-        name,
+      print(
+        '✅ SUCCESS - Auth registration successful for user: ${authResponse.user!.id}',
       );
+
+      // Step 2: Call stored procedure to create customer profile
+      print('🔍 DEBUG - Calling register_customer stored procedure');
+      print('📦 DATA - restaurant_id: ${_configService.restaurantId}');
+
+      final response = await client.rpc(
+        'register_customer',
+        params: {
+          'p_email': email,
+          'p_name': name,
+          'p_restaurant_id': _configService.restaurantId,
+        },
+      );
+
+      print('✅ SUCCESS - Stored procedure response received');
+      print('📦 DATA - Response type: ${response.runtimeType}');
+
+      if (response == null) {
+        print('❌ ERROR - Stored procedure returned null');
+        throw Exception('Error al crear perfil de cliente');
+      }
+
+      print('📦 DATA - Parsing customer profile from response');
+
+      // Parse the JSON response
+      final customerData = response as Map<String, dynamic>;
+
+      final user = UserModel(
+        id: customerData['id'],
+        name: customerData['name'] ?? '',
+        email: customerData['email'] ?? '',
+        phone: customerData['phone'],
+        photoUrl: customerData['photo_url'],
+        savedAddresses: const [],
+        savedCards: const [],
+        loyaltyPoints: customerData['loyalty_points'] ?? 0,
+        loyaltyTier: customerData['loyalty_tier'],
+      );
+
+      print('✅ SUCCESS - User profile created successfully');
+      print('📦 DATA - User: ${user.name} (${user.email})');
+
       return user;
-    } catch (e) {
-      SupabaseLogger.logError('auth.signUp', 'REGISTER', e);
+    } catch (e, stackTrace) {
+      print('❌ ERROR - Exception in register: $e');
+      print('❌ ERROR - Stack trace: $stackTrace');
+      SupabaseLogger.logError('register_customer', 'RPC', e);
       rethrow;
     }
   }
@@ -138,26 +247,40 @@ class SupabaseAuthDataSource implements AuthRemoteDataSource {
 
   @override
   Future<UserModel> updateProfile(UserModel user) async {
+    print('🔍 DEBUG - Starting updateProfile for user: ${user.id}');
+
     final client = SupabaseConfig.client;
 
-    String? photoUrl = user.photoUrl;
+    try {
+      // Call stored procedure to update profile
+      print('🔍 DEBUG - Calling update_customer_profile stored procedure');
+      print('📦 DATA - name: ${user.name}, phone: ${user.phone}');
 
-    // TODO: If photoUrl is local path, upload to Storage 'customer-avatars' bucket
-    // For now assuming string update or pre-uploaded URL
-    // Real implementation would require File object or base64
+      final response = await client.rpc(
+        'update_customer_profile',
+        params: {
+          'p_customer_id': user.id,
+          'p_name': user.name,
+          'p_phone': user.phone,
+        },
+      );
 
-    await client
-        .from('customers')
-        .update({'name': user.name, 'phone': user.phone, 'photo_url': photoUrl})
-        .eq('id', user.id);
+      print('✅ SUCCESS - Profile updated via stored procedure');
+      print('📦 DATA - Response: $response');
 
-    // Sync Addresses
-    await _syncAddresses(user.id, user.savedAddresses);
+      // Sync Addresses (using stored procedures)
+      await _syncAddresses(user.id, user.savedAddresses);
 
-    // Sync Payment Methods
-    await _syncPaymentMethods(user.id, user.savedCards);
+      // Sync Payment Methods (using stored procedures)
+      await _syncPaymentMethods(user.id, user.savedCards);
 
-    return user;
+      print('✅ SUCCESS - Profile update complete');
+      return user;
+    } catch (e, stackTrace) {
+      print('❌ ERROR - Exception in updateProfile: $e');
+      print('❌ ERROR - Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   @override
@@ -292,6 +415,8 @@ class SupabaseAuthDataSource implements AuthRemoteDataSource {
 
       final data = {
         'customer_id': customerId,
+        'restaurant_id':
+            _configService.restaurantId, // ✅ FIXED: Added restaurant_id
         'label': addr.label,
         'street_address': addr.address,
         'city': addr.city,
@@ -344,6 +469,8 @@ class SupabaseAuthDataSource implements AuthRemoteDataSource {
     for (final method in methods) {
       final data = {
         'customer_id': customerId,
+        'restaurant_id':
+            _configService.restaurantId, // ✅ FIXED: Added restaurant_id
         'type': method.type.name,
         'card_holder_name': method.cardHolder,
         'card_brand': method.cardBrand,

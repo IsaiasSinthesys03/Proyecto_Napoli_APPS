@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:napoli_app_v1/l10n/arb/app_localizations.dart';
+import 'package:napoli_app_v1/l10n/app_localizations.dart';
 import 'package:napoli_app_v1/src/core/core_ui/theme_provider.dart';
 import 'package:napoli_app_v1/src/features/settings/presentation/screens/notification_settings_screen.dart';
 import 'package:napoli_app_v1/src/features/settings/presentation/widgets/settings_tile.dart';

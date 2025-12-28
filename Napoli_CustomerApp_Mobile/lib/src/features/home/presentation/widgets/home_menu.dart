@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:napoli_app_v1/l10n/arb/app_localizations.dart';
+import 'package:napoli_app_v1/l10n/app_localizations.dart';
 import 'package:napoli_app_v1/src/core/core_ui/widgets/product_list_item.dart';
 import 'package:napoli_app_v1/src/core/core_domain/entities/product.dart';
 import 'package:napoli_app_v1/src/core/services/restaurant_config_service.dart';

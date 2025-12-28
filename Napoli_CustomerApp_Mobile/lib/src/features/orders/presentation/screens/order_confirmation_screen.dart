@@ -15,7 +15,7 @@ import 'package:napoli_app_v1/src/core/services/business_hours.service.dart';
 import 'package:napoli_app_v1/src/core/core_ui/widgets/business_closed_dialog.dart';
 import '../cubit/orders_cubit.dart';
 import '../cubit/orders_state.dart';
-import 'package:napoli_app_v1/l10n/arb/app_localizations.dart';
+import 'package:napoli_app_v1/l10n/app_localizations.dart';
 import '../widgets/delivery_address_section.dart';
 import '../widgets/payment_method_selector.dart';
 import '../widgets/order_summary.dart';
@@ -165,9 +165,7 @@ class _OrderConfirmationScreenState extends State<_OrderConfirmationContent> {
     if (!mounted) return;
 
     // Validar dirección
-    if (_selectedAddress == null &&
-        (_addressController.text.isEmpty ||
-            _addressNumberController.text.isEmpty)) {
+    if (_selectedAddress == null && _addressController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

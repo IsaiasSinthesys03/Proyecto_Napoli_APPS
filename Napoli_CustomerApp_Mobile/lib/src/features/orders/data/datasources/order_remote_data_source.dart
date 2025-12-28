@@ -22,121 +22,187 @@ class SupabaseOrderDataSource implements OrderRemoteDataSource {
 
   @override
   Future<OrderModel> createOrder(OrderModel order, String customerId) async {
+    print('🔍 DEBUG - Starting createOrder for customer: $customerId');
+
     final client = SupabaseConfig.client;
 
-    // Fetch customer details for snapshot
-    final customerDataQuery = await client
-        .from('customers')
-        .select('name, email, phone')
-        .eq('restaurant_id', _configService.restaurantId) // Security check
-        .eq('id', customerId)
-        .maybeSingle();
+    try {
+      // Prepare items for stored procedure
+      final itemsJson = order.itemsModel.map((item) {
+        print('🔍 DEBUG - Cart item: ${item.name}');
+        print('📦 DATA - Product ID: ${item.productId}');
+        print('📦 DATA - Product ID type: ${item.productId.runtimeType}');
 
-    // Default to empty strings if not found (should not happen if logged in)
-    final customerSnapshot = {
-      'name': customerDataQuery?['name'] ?? 'Guest',
-      'email': customerDataQuery?['email'] ?? '',
-      'phone': customerDataQuery?['phone'] ?? '',
-    };
+        return {
+          'product_id': item.productId,
+          'product_name': item.name,
+          'quantity': item.quantity,
+          'unit_price_cents': item.price,
+          'total_price_cents': item.price * item.quantity,
+          'notes': item.specialInstructions ?? '',
+        };
+      }).toList();
 
-    // Construct address snapshot matching Admin Web expectation
-    // Admin expects: { street, city, lat, lng }
-    final addressSnapshot = {
-      'street': order.address.address,
-      'address_details': order.address.details, // Extra info
-      'city': order.address.city,
-      'state': '', // AddressModel doesn't have state yet
-      'postal_code': '',
-      'country': '',
-      'lat': order.address.latitude ?? 0.0,
-      'lng': order.address.longitude ?? 0.0,
-      'label': order.address.label,
-    };
+      print('📦 DATA - Items JSON: $itemsJson');
 
-    // Create the order record
-    final orderData = await client
-        .from('orders')
-        .insert({
-          'restaurant_id': _configService.restaurantId,
-          'customer_id': customerId,
-          'status': 'pending',
-          'subtotal_cents': order.total,
-          'delivery_fee_cents': 0,
-          'discount_cents': 0,
-          'total_cents': order.total,
-          'payment_method': order.paymentMethod,
-          'order_type': 'delivery',
-          'address_snapshot': addressSnapshot,
-          'customer_snapshot': customerSnapshot,
-        })
-        .select()
-        .single();
+      // Prepare address snapshot
+      final addressSnapshot = {
+        'street': order.address.address,
+        'address_details': order.address.details,
+        'city': order.address.city,
+        'state': '',
+        'postal_code': '',
+        'country': '',
+        'lat': order.address.latitude ?? 0.0,
+        'lng': order.address.longitude ?? 0.0,
+        'label': order.address.label,
+      };
 
-    final orderId = orderData['id'] as String;
+      print('🔍 DEBUG - Calling create_customer_order stored procedure');
+      print('📦 DATA - Items count: ${itemsJson.length}');
+      print('📦 DATA - Total: ${order.total}');
 
-    // Create order items
-    for (final item in order.itemsModel) {
-      final addons = item.extras
-          .map((e) => {'name': e.name, 'price_cents': e.price})
-          .toList();
+      final response = await client.rpc(
+        'create_customer_order',
+        params: {
+          'p_customer_id': customerId,
+          'p_restaurant_id': _configService.restaurantId,
+          'p_items': itemsJson,
+          'p_address_snapshot': addressSnapshot,
+          'p_payment_method': order.paymentMethod,
+          'p_subtotal_cents': order.total,
+          'p_total_cents': order.total,
+          'p_delivery_fee_cents': 0,
+          'p_discount_cents': 0,
+        },
+      );
 
-      await client.from('order_items').insert({
-        'order_id': orderId,
-        'product_id': item.productId,
-        'product_name': item.name,
-        'quantity': item.quantity,
-        'unit_price_cents': item.price,
-        'subtotal_cents': item.price * item.quantity,
-        'addons_snapshot': addons,
-      });
+      print('✅ SUCCESS - Stored procedure response received');
+      print('📦 DATA - Response type: ${response.runtimeType}');
+
+      if (response == null) {
+        print('❌ ERROR - Stored procedure returned null');
+        throw Exception('Error al crear orden');
+      }
+
+      final orderData = response as Map<String, dynamic>;
+      final orderId = orderData['id'] as String;
+
+      print('✅ SUCCESS - Order created with ID: $orderId');
+
+      return OrderModel(
+        id: orderId,
+        userId: customerId,
+        itemsModel: order.itemsModel,
+        total: order.total,
+        status: OrderStatus.pending,
+        date: DateTime.now(),
+        address: order.address,
+        paymentMethod: order.paymentMethod,
+      );
+    } catch (e, stackTrace) {
+      print('❌ ERROR - Exception in createOrder: $e');
+      print('❌ ERROR - Stack trace: $stackTrace');
+      rethrow;
     }
-
-    return OrderModel(
-      id: orderId,
-      userId: customerId,
-      itemsModel: order.itemsModel,
-      total: order.total,
-      status: OrderStatus.pending,
-      date: DateTime.now(),
-      address: order.address,
-      paymentMethod: order.paymentMethod,
-    );
   }
 
   @override
   Future<List<OrderModel>> getOrders(String customerId) async {
+    print('🔍 DEBUG - Starting getOrders for customer: $customerId');
+
     final client = SupabaseConfig.client;
 
-    final ordersData = await client
-        .from('orders')
-        .select('''
-          *,
-          order_items(*)
-        ''')
-        .eq('restaurant_id', _configService.restaurantId)
-        .eq('customer_id', customerId)
-        .order('created_at', ascending: false);
+    try {
+      print('🔍 DEBUG - Calling get_customer_orders stored procedure');
+      print('📦 DATA - restaurant_id: ${_configService.restaurantId}');
 
-    return (ordersData as List).map((data) {
-      return _parseOrderFromData(data);
-    }).toList();
+      final response = await client.rpc(
+        'get_customer_orders',
+        params: {
+          'p_customer_id': customerId,
+          'p_restaurant_id': _configService.restaurantId,
+        },
+      );
+
+      print('✅ SUCCESS - Stored procedure response received');
+      print('📦 DATA - Response type: ${response.runtimeType}');
+
+      if (response == null) {
+        print('📦 DATA - No orders found, returning empty list');
+        return [];
+      }
+
+      final ordersData = response as List;
+      print('📦 DATA - Parsing ${ordersData.length} orders');
+
+      final orders = ordersData
+          .map((data) => _parseOrderFromData(data as Map<String, dynamic>))
+          .toList();
+
+      print('✅ SUCCESS - Orders parsed successfully');
+      return orders;
+    } catch (e, stackTrace) {
+      print('❌ ERROR - Exception in getOrders: $e');
+      print('❌ ERROR - Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   @override
   Future<OrderModel?> getOrderById(String orderId) async {
+    print('🔍 DEBUG - Starting getOrderById for order: $orderId');
+
     final client = SupabaseConfig.client;
+    final currentUser = client.auth.currentUser;
 
-    final orderData = await client
-        .from('orders')
-        .select('''
-          *,
-          order_items(*)
-        ''')
-        .eq('id', orderId)
-        .maybeSingle();
+    if (currentUser == null) {
+      print('❌ ERROR - No authenticated user');
+      return null;
+    }
 
-    if (orderData == null) return null;
-    return _parseOrderFromData(orderData);
+    try {
+      // Get customer_id from current user
+      final customerData = await client
+          .from('customers')
+          .select('id')
+          .eq('email', currentUser.email!)
+          .eq('restaurant_id', _configService.restaurantId)
+          .maybeSingle();
+
+      if (customerData == null) {
+        print('❌ ERROR - Customer not found');
+        return null;
+      }
+
+      final customerId = customerData['id'] as String;
+
+      print('🔍 DEBUG - Calling get_order_details stored procedure');
+
+      final response = await client.rpc(
+        'get_order_details',
+        params: {'p_order_id': orderId, 'p_customer_id': customerId},
+      );
+
+      print('✅ SUCCESS - Stored procedure response received');
+
+      if (response == null) {
+        print('📦 DATA - Order not found');
+        return null;
+      }
+
+      final orderData = response as Map<String, dynamic>;
+      print('📦 DATA - Parsing order details');
+
+      final order = _parseOrderFromData(orderData);
+
+      print('✅ SUCCESS - Order details parsed successfully');
+      return order;
+    } catch (e, stackTrace) {
+      print('❌ ERROR - Exception in getOrderById: $e');
+      print('❌ ERROR - Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   @override

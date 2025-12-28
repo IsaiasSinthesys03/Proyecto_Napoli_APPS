@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:napoli_app_v1/l10n/arb/app_localizations.dart';
+import 'package:napoli_app_v1/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:napoli_app_v1/src/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:napoli_app_v1/src/features/auth/presentation/cubit/auth_state.dart';

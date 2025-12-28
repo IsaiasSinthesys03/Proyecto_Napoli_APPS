@@ -18,38 +18,59 @@ class SupabaseCouponDataSource implements CouponRemoteDataSource {
 
   @override
   Future<CouponModel?> getCoupon(String code) async {
+    print('🔍 DEBUG - Starting getCoupon for code: $code');
+
     final client = SupabaseConfig.client;
-    final normalizedCode = code.trim().toUpperCase();
 
-    // Query coupons table for valid coupon
-    final data = await client
-        .from('coupons')
-        .select()
-        .eq('restaurant_id', _configService.restaurantId)
-        .eq('code', normalizedCode)
-        .eq('is_active', true)
-        .maybeSingle();
+    try {
+      // Get current user for customer_id
+      final currentUser = client.auth.currentUser;
+      String? customerId;
 
-    if (data == null) return null;
+      if (currentUser != null) {
+        // Get customer_id from email
+        final customerData = await client
+            .from('customers')
+            .select('id')
+            .eq('email', currentUser.email!)
+            .eq('restaurant_id', _configService.restaurantId)
+            .maybeSingle();
 
-    // Check validity dates
-    final now = DateTime.now();
-    final validFrom = data['valid_from'] != null
-        ? DateTime.parse(data['valid_from'] as String)
-        : null;
-    final validUntil = data['valid_until'] != null
-        ? DateTime.parse(data['valid_until'] as String)
-        : null;
+        customerId = customerData?['id'] as String?;
+      }
 
-    if (validFrom != null && now.isBefore(validFrom)) return null;
-    if (validUntil != null && now.isAfter(validUntil)) return null;
+      print('🔍 DEBUG - Calling validate_coupon stored procedure');
+      print('📦 DATA - code: $code, customer_id: $customerId');
 
-    // Check usage limits
-    final maxUses = data['max_uses'] as int?;
-    final currentUses = data['current_uses'] as int? ?? 0;
-    if (maxUses != null && currentUses >= maxUses) return null;
+      final response = await client.rpc(
+        'validate_coupon',
+        params: {
+          'p_code': code,
+          'p_restaurant_id': _configService.restaurantId,
+          'p_customer_id': customerId,
+        },
+      );
 
-    return CouponModel.fromSupabase(data);
+      print('✅ SUCCESS - Stored procedure response received');
+      print('📦 DATA - Response type: ${response.runtimeType}');
+
+      if (response == null) {
+        print('📦 DATA - Coupon not valid or not found');
+        return null;
+      }
+
+      final couponData = response as Map<String, dynamic>;
+      print('📦 DATA - Parsing coupon: ${couponData['code']}');
+
+      final coupon = CouponModel.fromSupabase(couponData);
+
+      print('✅ SUCCESS - Coupon validated successfully');
+      return coupon;
+    } catch (e, stackTrace) {
+      print('❌ ERROR - Exception in getCoupon: $e');
+      print('❌ ERROR - Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   @override
@@ -58,18 +79,31 @@ class SupabaseCouponDataSource implements CouponRemoteDataSource {
     String couponId,
     String? orderId,
   ) async {
+    print('🔍 DEBUG - Starting useCoupon');
+    print('📦 DATA - customer_id: $customerId, coupon_id: $couponId');
+
     final client = SupabaseConfig.client;
 
-    // Insert into customer_coupons
-    await client.from('customer_coupons').insert({
-      'customer_id': customerId,
-      'coupon_id': couponId,
-      'restaurant_id': _configService.restaurantId,
-      'used_at': DateTime.now().toIso8601String(),
-      'order_id': orderId,
-    });
+    try {
+      print('🔍 DEBUG - Calling use_coupon stored procedure');
 
-    // Increment current_uses on the coupon
-    await client.rpc('increment_coupon_usage', params: {'coupon_id': couponId});
+      final response = await client.rpc(
+        'use_coupon',
+        params: {
+          'p_customer_id': customerId,
+          'p_coupon_id': couponId,
+          'p_restaurant_id': _configService.restaurantId,
+          'p_order_id': orderId,
+        },
+      );
+
+      print('✅ SUCCESS - Stored procedure response received');
+      print('📦 DATA - Response: $response');
+      print('✅ SUCCESS - Coupon used successfully');
+    } catch (e, stackTrace) {
+      print('❌ ERROR - Exception in useCoupon: $e');
+      print('❌ ERROR - Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 }
