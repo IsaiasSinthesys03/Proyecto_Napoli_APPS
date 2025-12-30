@@ -5,7 +5,7 @@ import {
   Product,
   UpdateProductPayload,
 } from "@/core/models/product.model";
-import { toCamelCase } from "@/core/utils/utils";
+import { toCamelCase, toSnakeCase } from "@/core/utils/utils";
 
 async function uploadProductImage(
   file: File,
@@ -28,37 +28,33 @@ async function uploadProductImage(
 }
 
 export const getProducts = async (): Promise<Product[]> => {
+  console.log('🔍 DEBUG - Starting getProducts');
+
   const restaurantId = await getCurrentRestaurantId();
   if (!restaurantId) throw new Error("No restaurant found");
 
-  const { data, error } = await supabase
-    .from("products")
-    .select(
-      `
-      *,
-      category:categories(id, name)
-    `,
-    )
-    .eq("restaurant_id", restaurantId)
-    .order("display_order", { ascending: true });
+  const { data, error } = await supabase.rpc('get_admin_products', {
+    p_restaurant_id: restaurantId,
+  });
 
   if (error) throw new Error(error.message);
-  return (data || []).map((p) => toCamelCase<Product>(p));
+
+  console.log('✅ SUCCESS - Products retrieved');
+
+  return (data || []).map((p: any) => toCamelCase<Product>(p));
 };
 
 export const getProduct = async (id: string): Promise<Product> => {
-  const { data, error } = await supabase
-    .from("products")
-    .select(
-      `
-      *,
-      category:categories(id, name)
-    `,
-    )
-    .eq("id", id)
-    .single();
+  console.log('🔍 DEBUG - Starting getProduct for id:', id);
+
+  const { data, error } = await supabase.rpc('get_admin_product', {
+    p_product_id: id,
+  });
 
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Product retrieved');
+
   return toCamelCase<Product>(data);
 };
 
@@ -66,6 +62,8 @@ export const createProduct = async (
   payload: CreateProductPayload,
   image?: File,
 ): Promise<Product> => {
+  console.log('🔍 DEBUG - Starting createProduct');
+
   const restaurantId = await getCurrentRestaurantId();
   if (!restaurantId) throw new Error("No restaurant found");
 
@@ -74,28 +72,27 @@ export const createProduct = async (
     imageUrl = await uploadProductImage(image, restaurantId);
   }
 
-  const { data, error } = await supabase
-    .from("products")
-    .insert({
-      restaurant_id: restaurantId,
-      name: payload.name,
-      description: payload.description || null,
-      short_description: payload.shortDescription || null,
-      price_cents: payload.priceCents,
-      compare_at_price_cents: payload.compareAtPriceCents || null,
-      category_id: payload.categoryId || null,
-      image_url: imageUrl || null,
-      is_available: payload.isAvailable ?? true,
-      is_featured: payload.isFeatured ?? false,
-      tags: payload.tags || [],
-      allergens: payload.allergens || [],
-      preparation_time_minutes: payload.preparationTimeMinutes || null,
-      calories: payload.calories || null,
-    })
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc('create_admin_product', {
+    p_restaurant_id: restaurantId,
+    p_name: payload.name,
+    p_description: payload.description || null,
+    p_short_description: payload.shortDescription || null,
+    p_price_cents: payload.priceCents,
+    p_compare_at_price_cents: payload.compareAtPriceCents || null,
+    p_category_id: payload.categoryId || null,
+    p_image_url: imageUrl || null,
+    p_is_available: payload.isAvailable ?? true,
+    p_is_featured: payload.isFeatured ?? false,
+    p_tags: payload.tags || [],
+    p_allergens: payload.allergens || [],
+    p_preparation_time_minutes: payload.preparationTimeMinutes || null,
+    p_calories: payload.calories || null,
+  });
 
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Product created');
+
   return toCamelCase<Product>(data);
 };
 
@@ -103,74 +100,86 @@ export const updateProduct = async (
   payload: UpdateProductPayload,
   image?: File,
 ): Promise<Product> => {
+  console.log('🔍 DEBUG - Starting updateProduct for id:', payload.id);
+
   const restaurantId = await getCurrentRestaurantId();
   if (!restaurantId) throw new Error("No restaurant found");
 
-  const updateData: Record<string, unknown> = {};
-
-  if (payload.name !== undefined) updateData.name = payload.name;
-  if (payload.description !== undefined)
-    updateData.description = payload.description;
-  if (payload.shortDescription !== undefined)
-    updateData.short_description = payload.shortDescription;
-  if (payload.priceCents !== undefined)
-    updateData.price_cents = payload.priceCents;
-  if (payload.compareAtPriceCents !== undefined)
-    updateData.compare_at_price_cents = payload.compareAtPriceCents;
-  if (payload.categoryId !== undefined)
-    updateData.category_id = payload.categoryId || null;
-  if (payload.isAvailable !== undefined)
-    updateData.is_available = payload.isAvailable;
-  if (payload.isFeatured !== undefined)
-    updateData.is_featured = payload.isFeatured;
-  if (payload.isNew !== undefined) updateData.is_new = payload.isNew;
-  if (payload.isBestseller !== undefined)
-    updateData.is_bestseller = payload.isBestseller;
-  if (payload.tags !== undefined) updateData.tags = payload.tags;
-  if (payload.allergens !== undefined) updateData.allergens = payload.allergens;
-  if (payload.preparationTimeMinutes !== undefined)
-    updateData.preparation_time_minutes = payload.preparationTimeMinutes;
-  if (payload.calories !== undefined) updateData.calories = payload.calories;
-  if (payload.displayOrder !== undefined)
-    updateData.display_order = payload.displayOrder;
-
+  let imageUrl = payload.imageUrl;
   if (image) {
-    updateData.image_url = await uploadProductImage(image, restaurantId);
-  } else if (payload.imageUrl !== undefined) {
-    updateData.image_url = payload.imageUrl;
+    imageUrl = await uploadProductImage(image, restaurantId);
   }
 
-  const { data, error } = await supabase
-    .from("products")
-    .update(updateData)
-    .eq("id", payload.id)
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc('update_admin_product', {
+    p_product_id: payload.id,
+    p_name: payload.name || null,
+    p_description: payload.description || null,
+    p_short_description: payload.shortDescription || null,
+    p_price_cents: payload.priceCents || null,
+    p_compare_at_price_cents: payload.compareAtPriceCents || null,
+    p_category_id: payload.categoryId || null,
+    p_image_url: imageUrl || null,
+    p_is_available: payload.isAvailable ?? null,
+    p_is_featured: payload.isFeatured ?? null,
+    p_is_new: payload.isNew ?? null,
+    p_is_bestseller: payload.isBestseller ?? null,
+    p_tags: payload.tags || null,
+    p_allergens: payload.allergens || null,
+    p_preparation_time_minutes: payload.preparationTimeMinutes || null,
+    p_calories: payload.calories || null,
+    p_display_order: payload.displayOrder || null,
+  });
 
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Product updated');
+
   return toCamelCase<Product>(data);
 };
 
 export const deleteProduct = async (productId: string): Promise<void> => {
-  const { error } = await supabase
-    .from("products")
-    .delete()
-    .eq("id", productId);
+  console.log('🔍 DEBUG - Starting deleteProduct for id:', productId);
+
+  const { error } = await supabase.rpc('delete_admin_product', {
+    p_product_id: productId,
+  });
 
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Product deleted');
 };
 
 export const toggleProductAvailability = async (
   id: string,
   isAvailable: boolean,
 ): Promise<Product> => {
-  const { data, error } = await supabase
-    .from("products")
-    .update({ is_available: isAvailable })
-    .eq("id", id)
-    .select()
-    .single();
+  console.log('🔍 DEBUG - Starting toggleProductAvailability for id:', id);
+
+  const { data, error } = await supabase.rpc('toggle_admin_product_availability', {
+    p_product_id: id,
+    p_is_available: isAvailable,
+  });
 
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Product availability toggled');
+
   return toCamelCase<Product>(data);
+};
+
+export const assignAddonsToProduct = async (
+  productId: string,
+  addonIds: string[],
+): Promise<void> => {
+  console.log('🔍 DEBUG - Starting assignAddonsToProduct for product:', productId);
+  console.log('📦 DATA - addon_ids:', addonIds);
+
+  const { error } = await supabase.rpc('assign_addons_to_product', {
+    p_product_id: productId,
+    p_addon_ids: addonIds,
+  });
+
+  if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Addons assigned to product');
 };

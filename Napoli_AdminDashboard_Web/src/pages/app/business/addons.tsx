@@ -59,7 +59,6 @@ import {
   useDeleteAddon,
   useUpdateAddon,
 } from "@/core/hooks/useAddons";
-import { useCategories } from "@/core/hooks/useCategories";
 import { Addon } from "@/core/models/addon.model";
 
 const addonFormSchema = z.object({
@@ -67,7 +66,6 @@ const addonFormSchema = z.object({
   priceCents: z.coerce
     .number()
     .min(0, "El precio debe ser un número positivo."),
-  categoryIds: z.array(z.string()).optional(),
   image: z.instanceof(File).optional(),
 });
 
@@ -75,7 +73,6 @@ type AddonFormValues = z.infer<typeof addonFormSchema>;
 
 export function Addons() {
   const { data: addons, isLoading, isError } = useAddons();
-  const { data: categories } = useCategories();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAddon, setEditingAddon] = useState<Addon | null>(null);
@@ -170,7 +167,6 @@ export function Addons() {
                 addon={editingAddon}
                 onSubmit={handleAddonSubmit}
                 onCancel={() => setIsDialogOpen(false)}
-                categories={categories || []}
                 isSubmitting={
                   createAddonMutation.isPending || updateAddonMutation.isPending
                 }
@@ -320,7 +316,6 @@ interface AddonFormProps {
   addon: Addon | null;
   onSubmit: (data: AddonFormValues) => void;
   onCancel: () => void;
-  categories: { id: string; name: string }[];
   isSubmitting: boolean;
 }
 
@@ -328,7 +323,6 @@ function AddonForm({
   addon,
   onSubmit,
   onCancel,
-  categories,
   isSubmitting,
 }: AddonFormProps) {
   const form = useForm<AddonFormValues>({
@@ -336,18 +330,12 @@ function AddonForm({
     defaultValues: {
       name: addon?.name || "",
       priceCents: addon?.priceCents || 0,
-      categoryIds: [],
     },
   });
 
   function handleFormSubmit(data: AddonFormValues) {
     onSubmit(data);
   }
-
-  const categoryOptions = categories.map((c) => ({
-    value: c.id,
-    label: c.name,
-  }));
 
   return (
     <Form {...form}>
@@ -394,23 +382,6 @@ function AddonForm({
               <FormControl>
                 <Input type="number" {...field} disabled={isSubmitting} />
               </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="categoryIds"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Categorías</FormLabel>
-              <MultiSelect
-                options={categoryOptions}
-                value={field.value}
-                onChange={field.onChange}
-                placeholder="Selecciona categorías..."
-              />
               <FormMessage />
             </FormItem>
           )}

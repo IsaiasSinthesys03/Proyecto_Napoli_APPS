@@ -1,3 +1,4 @@
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 
@@ -56,6 +57,8 @@ export function DeliveryMen() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const deliveryMenPerPage = 10;
 
   const { data: deliveryMenData, isLoading: isLoadingDeliveryMen } =
@@ -88,23 +91,39 @@ export function DeliveryMen() {
     name: string;
     phone: string;
     email: string;
+    password?: string;
+    passwordConfirm?: string;
     vehicleType: string;
   }
 
   async function handleCreateOrUpdateDeliveryMan(data: DeliveryManFormData) {
-    const payload = {
-      name: data.name,
-      phone: data.phone,
-      email: data.email,
-      vehicleType: (data.vehicleType || "moto") as VehicleType,
-    };
-
     if (editingDeliveryMan) {
+      const payload = {
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+        vehicleType: (data.vehicleType || "moto") as VehicleType,
+      };
       await updateDeliveryManFn({
         id: editingDeliveryMan.id,
         payload,
       });
     } else {
+      if (!data.password) {
+        alert("La contraseña es requerida para crear un nuevo repartidor");
+        return;
+      }
+      if (data.password !== data.passwordConfirm) {
+        alert("Las contraseñas no coinciden");
+        return;
+      }
+      const payload = {
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+        password: data.password,
+        vehicleType: (data.vehicleType || "moto") as VehicleType,
+      };
       await createDeliveryManFn(payload);
     }
 
@@ -150,7 +169,11 @@ export function DeliveryMen() {
           <Dialog
             open={isDialogOpen}
             onOpenChange={(open) => {
-              if (!open) setEditingDeliveryMan(null);
+              if (!open) {
+                setEditingDeliveryMan(null);
+                setShowPassword(false);
+                setShowPasswordConfirm(false);
+              }
               setIsDialogOpen(open);
             }}
           >
@@ -193,6 +216,60 @@ export function DeliveryMen() {
                     defaultValue={editingDeliveryMan?.phone || ""}
                   />
                 </div>
+                {!editingDeliveryMan && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="driver-password">Contraseña</Label>
+                      <div className="relative">
+                        <Input
+                          id="driver-password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Contraseña para login"
+                          required
+                          className="pr-10"
+                          autoComplete="new-password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-1 text-muted-foreground hover:text-foreground transition-colors"
+                          tabIndex={-1}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="driver-password-confirm">Confirmar Contraseña</Label>
+                      <div className="relative">
+                        <Input
+                          id="driver-password-confirm"
+                          type={showPasswordConfirm ? "text" : "password"}
+                          placeholder="Confirma la contraseña"
+                          required
+                          className="pr-10"
+                          autoComplete="new-password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-1 text-muted-foreground hover:text-foreground transition-colors"
+                          tabIndex={-1}
+                        >
+                          {showPasswordConfirm ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="driver-vehicle">Tipo de Vehículo</Label>
                   <select
@@ -218,6 +295,12 @@ export function DeliveryMen() {
                     const phoneInput = document.getElementById(
                       "driver-phone",
                     ) as HTMLInputElement;
+                    const passwordInput = document.getElementById(
+                      "driver-password",
+                    ) as HTMLInputElement | null;
+                    const passwordConfirmInput = document.getElementById(
+                      "driver-password-confirm",
+                    ) as HTMLInputElement | null;
                     const vehicleSelect = document.getElementById(
                       "driver-vehicle",
                     ) as HTMLSelectElement;
@@ -225,6 +308,8 @@ export function DeliveryMen() {
                       name: nameInput.value,
                       email: emailInput.value,
                       phone: phoneInput.value,
+                      password: passwordInput?.value,
+                      passwordConfirm: passwordConfirmInput?.value,
                       vehicleType: vehicleSelect.value,
                     });
                   }}

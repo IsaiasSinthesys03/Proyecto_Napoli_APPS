@@ -14,7 +14,7 @@ DriverModel _$DriverModelFromJson(Map<String, dynamic> json) => DriverModel(
   phone: json['phone'] as String,
   photoUrl: json['photo_url'] as String?,
   vehicleType: json['vehicle_type'] as String,
-  licensePlate: json['license_plate'] as String,
+  licensePlate: json['license_plate'] as String?,
   status: json['status'] as String,
   isOnline: json['is_online'] as bool,
   isOnDelivery: json['is_on_delivery'] as bool,

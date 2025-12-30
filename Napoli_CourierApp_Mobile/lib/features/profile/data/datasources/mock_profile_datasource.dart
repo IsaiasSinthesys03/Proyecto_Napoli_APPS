@@ -61,7 +61,9 @@ class MockProfileDataSource {
     // Guardar en SharedPreferences
     await _prefs.setString('driver_name', driver.name);
     await _prefs.setString('driver_phone', driver.phone);
-    await _prefs.setString('license_plate', driver.licensePlate);
+    if (driver.licensePlate != null) {
+      await _prefs.setString('license_plate', driver.licensePlate!);
+    }
     await _prefs.setString('vehicle_type', driver.vehicleType.name);
     if (driver.photoUrl != null) {
       await _prefs.setString('driver_image', driver.photoUrl!);

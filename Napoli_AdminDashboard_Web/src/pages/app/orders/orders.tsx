@@ -42,6 +42,9 @@ export function Orders() {
       }),
   });
 
+  console.log('🎨 UI - isLoadingOrders:', isLoadingOrders);
+  console.log('🎨 UI - result:', result);
+
   function handlePaginate(pageIndex: number) {
     setSearchParams((state) => {
       state.set("page", (pageIndex + 1).toString());
@@ -74,12 +77,13 @@ export function Orders() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoadingOrders && <OrderTableSkeleton />}
-
-                {result &&
-                  result.results.map((order) => {
+                {isLoadingOrders ? (
+                  <OrderTableSkeleton />
+                ) : (
+                  result?.results.map((order) => {
                     return <OrderTableRow key={order.id} order={order} />;
-                  })}
+                  })
+                )}
               </TableBody>
             </Table>
           </div>

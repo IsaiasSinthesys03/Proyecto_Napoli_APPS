@@ -11,7 +11,7 @@ class Driver extends Equatable {
   final String phone;
   final String? photoUrl;
   final VehicleType vehicleType;
-  final String licensePlate;
+  final String? licensePlate;
   final DriverStatus status;
   final bool isOnline;
   final bool isOnDelivery;
@@ -30,7 +30,7 @@ class Driver extends Equatable {
     required this.phone,
     this.photoUrl,
     required this.vehicleType,
-    required this.licensePlate,
+    this.licensePlate,
     required this.status,
     required this.isOnline,
     required this.isOnDelivery,

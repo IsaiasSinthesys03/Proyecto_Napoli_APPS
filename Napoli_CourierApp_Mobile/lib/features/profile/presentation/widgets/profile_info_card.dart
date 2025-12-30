@@ -56,7 +56,7 @@ class ProfileInfoCard extends StatelessWidget {
             _buildInfoRow(
               icon: Icons.pin_outlined,
               label: 'Placa',
-              value: driver.licensePlate,
+              value: driver.licensePlate ?? 'No especificada',
               theme: theme,
             ),
             const Divider(height: AppDimensions.spacingL),

@@ -19,7 +19,7 @@ class DriverModel {
   @JsonKey(name: 'vehicle_type')
   final String vehicleType;
   @JsonKey(name: 'license_plate')
-  final String licensePlate;
+  final String? licensePlate;
   final String status;
   @JsonKey(name: 'is_online')
   final bool isOnline;
@@ -46,7 +46,7 @@ class DriverModel {
     required this.phone,
     this.photoUrl,
     required this.vehicleType,
-    required this.licensePlate,
+    this.licensePlate,
     required this.status,
     required this.isOnline,
     required this.isOnDelivery,
@@ -68,7 +68,7 @@ class DriverModel {
       phone: phone,
       photoUrl: photoUrl,
       vehicleType: _parseVehicleType(vehicleType),
-      licensePlate: licensePlate,
+      licensePlate: licensePlate ?? '',
       status: _parseDriverStatus(status),
       isOnline: isOnline,
       isOnDelivery: isOnDelivery,

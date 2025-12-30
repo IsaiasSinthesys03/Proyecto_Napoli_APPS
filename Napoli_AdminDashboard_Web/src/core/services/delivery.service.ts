@@ -8,109 +8,194 @@ import {
   GetDeliveryMenResponse,
   UpdateDriverPayload,
 } from "@/core/models/delivery.model";
-import { toCamelCase, toSnakeCase } from "@/core/utils/utils";
+import { toCamelCase } from "@/core/utils/utils";
 
 export const getDeliveryMen = async (): Promise<GetDeliveryMenResponse> => {
+  console.log('🔍 DEBUG - Starting getDeliveryMen');
+
   const restaurantId = await getCurrentRestaurantId();
   if (!restaurantId) throw new Error("No restaurant found");
 
-  const { data, error } = await supabase
-    .from("drivers")
-    .select("*")
-    .eq("restaurant_id", restaurantId)
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabase.rpc('get_admin_drivers', {
+    p_restaurant_id: restaurantId,
+  });
 
   if (error) throw new Error(error.message);
 
-  const drivers = (data || []).map((d) => toCamelCase<Driver>(d));
+  console.log('✅ SUCCESS - Drivers retrieved');
+
+  const drivers = (data || []).map((d: any) => toCamelCase<Driver>(d));
   return { deliveryMen: drivers };
 };
 
 export const createDeliveryMan = async (
   payload: CreateDriverPayload,
 ): Promise<Driver> => {
+  console.log('🔍 DEBUG - Starting createDeliveryMan');
+
   const restaurantId = await getCurrentRestaurantId();
   if (!restaurantId) throw new Error("No restaurant found");
 
-  const { data, error } = await supabase
-    .from("drivers")
-    .insert({
-      restaurant_id: restaurantId,
-      ...toSnakeCase(payload as unknown as Record<string, unknown>),
-      status: "pending",
-    })
-    .select()
-    .single();
+  // 1. Save current admin session
+  const { data: { session: adminSession } } = await supabase.auth.getSession();
+  if (!adminSession) throw new Error("No admin session found");
 
-  if (error) throw new Error(error.message);
-  return toCamelCase<Driver>(data);
+  console.log('💾 Admin session saved');
+
+  try {
+    // 2. Create driver auth account (this will auto-login as driver)
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: payload.email,
+      password: payload.password,
+      options: {
+        data: {
+          name: payload.name,
+          role: 'driver',
+          restaurant_id: restaurantId,
+        },
+        emailRedirectTo: undefined,
+      },
+    });
+
+    if (authError) throw new Error(`Error creating auth user: ${authError.message}`);
+    if (!authData.user) throw new Error("No user returned from auth");
+
+    console.log('✅ Driver auth user created:', authData.user.id);
+
+    // 3. Immediately restore admin session (sign out driver, sign in admin)
+    await supabase.auth.setSession({
+      access_token: adminSession.access_token,
+      refresh_token: adminSession.refresh_token,
+    });
+
+    console.log('🔄 Admin session restored');
+
+    // 4. Create driver record in database
+    const { data, error } = await supabase.rpc('create_admin_driver', {
+      p_restaurant_id: restaurantId,
+      p_name: payload.name,
+      p_email: payload.email,
+      p_phone: payload.phone,
+      p_photo_url: payload.photoUrl || null,
+      p_vehicle_type: payload.vehicleType || 'moto',
+      p_vehicle_brand: payload.vehicleBrand || null,
+      p_vehicle_model: payload.vehicleModel || null,
+      p_vehicle_color: payload.vehicleColor || null,
+      p_vehicle_year: payload.vehicleYear || null,
+      p_license_plate: payload.licensePlate || null,
+    });
+
+    if (error) {
+      console.error('Failed to create driver record:', error);
+      throw new Error(error.message);
+    }
+
+    console.log('✅ SUCCESS - Driver created');
+
+    return toCamelCase<Driver>(data);
+  } catch (error) {
+    // Ensure admin session is restored even if there's an error
+    if (adminSession) {
+      await supabase.auth.setSession({
+        access_token: adminSession.access_token,
+        refresh_token: adminSession.refresh_token,
+      });
+      console.log('🔄 Admin session restored after error');
+    }
+    throw error;
+  }
 };
 
 export const updateDeliveryMan = async (
   id: string,
   payload: UpdateDriverPayload,
 ): Promise<Driver> => {
-  const { data, error } = await supabase
-    .from("drivers")
-    .update(toSnakeCase(payload as unknown as Record<string, unknown>))
-    .eq("id", id)
-    .select()
-    .single();
+  console.log('🔍 DEBUG - Starting updateDeliveryMan for id:', id);
+
+  const { data, error } = await supabase.rpc('update_admin_driver', {
+    p_driver_id: id,
+    p_name: payload.name || null,
+    p_email: payload.email || null,
+    p_phone: payload.phone || null,
+    p_photo_url: payload.photoUrl || null,
+    p_vehicle_type: payload.vehicleType || null,
+    p_vehicle_brand: payload.vehicleBrand || null,
+    p_vehicle_model: payload.vehicleModel || null,
+    p_vehicle_color: payload.vehicleColor || null,
+    p_vehicle_year: payload.vehicleYear || null,
+    p_license_plate: payload.licensePlate || null,
+  });
 
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Driver updated');
+
   return toCamelCase<Driver>(data);
 };
 
 export const deleteDeliveryMan = async (id: string): Promise<void> => {
-  const { error } = await supabase.from("drivers").delete().eq("id", id);
+  console.log('🔍 DEBUG - Starting deleteDeliveryMan for id:', id);
+
+  const { error } = await supabase.rpc('delete_admin_driver', {
+    p_driver_id: id,
+  });
 
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Driver deleted');
 };
 
 export const toggleDeliveryManStatus = async (
   id: string,
   status: DriverStatusType,
 ): Promise<Driver> => {
-  const { data, error } = await supabase
-    .from("drivers")
-    .update({ status })
-    .eq("id", id)
-    .select()
-    .single();
+  console.log('🔍 DEBUG - Starting toggleDeliveryManStatus for id:', id);
+
+  const { data, error } = await supabase.rpc('toggle_driver_status', {
+    p_driver_id: id,
+    p_status: status,
+  });
 
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Driver status toggled');
+
   return toCamelCase<Driver>(data);
 };
 
 export const approveDriver = async (id: string): Promise<Driver> => {
+  console.log('🔍 DEBUG - Starting approveDriver for id:', id);
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data, error } = await supabase
-    .from("drivers")
-    .update({
-      status: "approved",
-      approved_at: new Date().toISOString(),
-      approved_by: user?.id,
-    })
-    .eq("id", id)
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc('approve_driver', {
+    p_driver_id: id,
+    p_approved_by: user?.id || null,
+  });
 
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Driver approved');
+
   return toCamelCase<Driver>(data);
 };
 
 export const assignDeliveryMan = async (
   params: AssignDeliveryManParams,
 ): Promise<void> => {
-  const { error } = await supabase
-    .from("orders")
-    .update({ driver_id: params.deliveryManId })
-    .eq("id", params.orderId);
+  console.log('🔍 DEBUG - Starting assignDeliveryMan');
+
+  // This uses the assign_driver_to_order SP from order_status_management.sql
+  const { error } = await supabase.rpc('assign_driver_to_order', {
+    p_order_id: params.orderId,
+    p_driver_id: params.deliveryManId,
+  });
 
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Driver assigned to order');
 };
 
 export interface ActiveDelivery {
@@ -123,65 +208,19 @@ export interface ActiveDelivery {
   customerName: string;
 }
 
-interface OrderWithDriver {
-  id: string;
-  address_snapshot: { street_address?: string; label?: string } | null;
-  customer_snapshot: { name?: string } | null;
-  driver_id: string;
-}
-
-interface DriverInfo {
-  id: string;
-  name: string;
-  phone: string | null;
-  vehicle_type: string | null;
-}
-
 export const getActiveDeliveries = async (): Promise<ActiveDelivery[]> => {
+  console.log('🔍 DEBUG - Starting getActiveDeliveries');
+
   const restaurantId = await getCurrentRestaurantId();
   if (!restaurantId) return [];
 
-  const { data: orders, error: ordersError } = await supabase
-    .from("orders")
-    .select("id, address_snapshot, customer_snapshot, driver_id")
-    .eq("restaurant_id", restaurantId)
-    .eq("status", "delivering");
-
-  if (ordersError) throw new Error(ordersError.message);
-
-  const ordersWithDriver = (orders || []).filter(
-    (o): o is OrderWithDriver => o.driver_id != null,
-  );
-  if (ordersWithDriver.length === 0) return [];
-
-  const driverIds = [...new Set(ordersWithDriver.map((o) => o.driver_id))];
-
-  const { data: drivers, error: driversError } = await supabase
-    .from("drivers")
-    .select("id, name, phone, vehicle_type")
-    .in("id", driverIds);
-
-  if (driversError) throw new Error(driversError.message);
-
-  const driversMap = new Map((drivers || []).map((d: DriverInfo) => [d.id, d]));
-
-  return ordersWithDriver.map((order) => {
-    const driver = driversMap.get(order.driver_id) || {
-      name: "Repartidor",
-      phone: null,
-      vehicle_type: "moto",
-    };
-    return {
-      orderId: order.id,
-      driverId: order.driver_id,
-      driverName: driver.name,
-      driverPhone: driver.phone,
-      driverVehicleType: driver.vehicle_type || "moto",
-      deliveryAddress:
-        order.address_snapshot?.street_address ||
-        order.address_snapshot?.label ||
-        "Sin dirección",
-      customerName: order.customer_snapshot?.name || "Cliente",
-    };
+  const { data, error } = await supabase.rpc('get_active_deliveries', {
+    p_restaurant_id: restaurantId,
   });
+
+  if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Active deliveries retrieved');
+
+  return (data || []).map((d: any) => toCamelCase<ActiveDelivery>(d));
 };

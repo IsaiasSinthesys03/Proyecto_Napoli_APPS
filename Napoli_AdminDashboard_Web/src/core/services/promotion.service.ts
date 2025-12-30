@@ -13,23 +13,28 @@ import { toCamelCase } from "@/core/utils/utils";
 // --- Promotions ---
 
 export const getPromotions = async (): Promise<Promotion[]> => {
+  console.log('🔍 DEBUG - Starting getPromotions');
+
   const restaurantId = await getCurrentRestaurantId();
   if (!restaurantId) throw new Error("No restaurant found");
 
-  const { data, error } = await supabase
-    .from("promotions")
-    .select("*")
-    .eq("restaurant_id", restaurantId)
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabase.rpc('get_admin_promotions', {
+    p_restaurant_id: restaurantId,
+  });
 
   if (error) throw new Error(error.message);
-  return (data || []).map((p) => toCamelCase<Promotion>(p));
+
+  console.log('✅ SUCCESS - Promotions retrieved');
+
+  return (data || []).map((p: any) => toCamelCase<Promotion>(p));
 };
 
 export const createPromotion = async (
   payload: CreatePromotionPayload,
   image?: File,
 ): Promise<Promotion> => {
+  console.log('🔍 DEBUG - Starting createPromotion');
+
   const restaurantId = await getCurrentRestaurantId();
   if (!restaurantId) throw new Error("No restaurant found");
 
@@ -50,29 +55,29 @@ export const createPromotion = async (
     imageUrl = publicUrl;
   }
 
-  const { data, error } = await supabase
-    .from("promotions")
-    .insert({
-      restaurant_id: restaurantId,
-      name: payload.name,
-      description: payload.description,
-      type: payload.type,
-      discount_percentage: payload.discountPercentage,
-      discount_amount_cents: payload.discountAmountCents,
-      minimum_order_cents: payload.minimumOrderCents,
-      maximum_discount_cents: payload.maximumDiscountCents,
-      start_date: payload.startDate.toISOString(),
-      end_date: payload.endDate.toISOString(),
-      max_uses: payload.maxUses,
-      max_uses_per_customer: payload.maxUsesPerCustomer,
-      image_url: imageUrl,
-      is_active: payload.isActive ?? true,
-      is_featured: payload.isFeatured ?? false,
-    })
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc('create_admin_promotion', {
+    p_restaurant_id: restaurantId,
+    p_name: payload.name,
+    p_type: payload.type,
+    p_start_date: payload.startDate ? payload.startDate.toISOString() : new Date().toISOString(),
+    p_end_date: payload.endDate ? payload.endDate.toISOString() : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    p_description: payload.description || null,
+    p_discount_percentage: payload.discountPercentage || null,
+    p_discount_amount_cents: payload.discountAmountCents || null,
+    p_minimum_order_cents: payload.minimumOrderCents || 0,
+    p_maximum_discount_cents: payload.maximumDiscountCents || null,
+    p_max_uses: payload.maxUses || null,
+    p_max_uses_per_customer: payload.maxUsesPerCustomer || 1,
+    p_image_url: imageUrl || null,
+    p_banner_url: null,
+    p_is_active: payload.isActive ?? true,
+    p_is_featured: payload.isFeatured ?? false,
+  });
 
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Promotion created');
+
   return toCamelCase<Promotion>(data);
 };
 
@@ -80,32 +85,12 @@ export const updatePromotion = async (
   payload: UpdatePromotionPayload,
   image?: File,
 ): Promise<Promotion> => {
+  console.log('🔍 DEBUG - Starting updatePromotion for id:', payload.id);
+
   const restaurantId = await getCurrentRestaurantId();
   if (!restaurantId) throw new Error("No restaurant found");
 
-  const updateData: Record<string, unknown> = {};
-  if (payload.name !== undefined) updateData.name = payload.name;
-  if (payload.description !== undefined)
-    updateData.description = payload.description;
-  if (payload.type !== undefined) updateData.type = payload.type;
-  if (payload.discountPercentage !== undefined)
-    updateData.discount_percentage = payload.discountPercentage;
-  if (payload.discountAmountCents !== undefined)
-    updateData.discount_amount_cents = payload.discountAmountCents;
-  if (payload.minimumOrderCents !== undefined)
-    updateData.minimum_order_cents = payload.minimumOrderCents;
-  if (payload.maximumDiscountCents !== undefined)
-    updateData.maximum_discount_cents = payload.maximumDiscountCents;
-  if (payload.startDate)
-    updateData.start_date = payload.startDate.toISOString();
-  if (payload.endDate) updateData.end_date = payload.endDate.toISOString();
-  if (payload.maxUses !== undefined) updateData.max_uses = payload.maxUses;
-  if (payload.maxUsesPerCustomer !== undefined)
-    updateData.max_uses_per_customer = payload.maxUsesPerCustomer;
-  if (payload.isActive !== undefined) updateData.is_active = payload.isActive;
-  if (payload.isFeatured !== undefined)
-    updateData.is_featured = payload.isFeatured;
-
+  let imageUrl = payload.imageUrl;
   if (image) {
     const fileExt = image.name.split(".").pop();
     const fileName = `promotions/${restaurantId}/${Date.now()}.${fileExt}`;
@@ -117,133 +102,172 @@ export const updatePromotion = async (
     const {
       data: { publicUrl },
     } = supabase.storage.from("product-images").getPublicUrl(uploadData.path);
-    updateData.image_url = publicUrl;
+    imageUrl = publicUrl;
   }
 
-  const { data, error } = await supabase
-    .from("promotions")
-    .update(updateData)
-    .eq("id", payload.id)
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc('update_admin_promotion', {
+    p_promotion_id: payload.id,
+    p_name: payload.name || null,
+    p_description: payload.description || null,
+    p_type: payload.type || null,
+    p_discount_percentage: payload.discountPercentage || null,
+    p_discount_amount_cents: payload.discountAmountCents || null,
+    p_minimum_order_cents: payload.minimumOrderCents || null,
+    p_maximum_discount_cents: payload.maximumDiscountCents || null,
+    p_start_date: payload.startDate?.toISOString() || null,
+    p_end_date: payload.endDate?.toISOString() || null,
+    p_max_uses: payload.maxUses || null,
+    p_max_uses_per_customer: payload.maxUsesPerCustomer || null,
+    p_image_url: imageUrl || null,
+    p_banner_url: null,
+    p_is_active: payload.isActive ?? null,
+    p_is_featured: payload.isFeatured ?? null,
+  });
 
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Promotion updated');
+
   return toCamelCase<Promotion>(data);
 };
 
 export const deletePromotion = async (id: string): Promise<void> => {
-  const { error } = await supabase.from("promotions").delete().eq("id", id);
+  console.log('🔍 DEBUG - Starting deletePromotion for id:', id);
+
+  const { error } = await supabase.rpc('delete_admin_promotion', {
+    p_promotion_id: id,
+  });
+
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Promotion deleted');
 };
 
 export const togglePromotionStatus = async (
   id: string,
   isActive: boolean,
 ): Promise<void> => {
-  const { error } = await supabase
-    .from("promotions")
-    .update({ is_active: isActive })
-    .eq("id", id);
+  console.log('🔍 DEBUG - Starting togglePromotionStatus for id:', id);
+
+  const { error } = await supabase.rpc('toggle_promotion_status', {
+    p_promotion_id: id,
+    p_is_active: isActive,
+  });
+
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Promotion status toggled');
 };
 
 // --- Coupons ---
 
 export const getCoupons = async (): Promise<Coupon[]> => {
+  console.log('🔍 DEBUG - Starting getCoupons');
+
   const restaurantId = await getCurrentRestaurantId();
   if (!restaurantId) throw new Error("No restaurant found");
 
-  const { data, error } = await supabase
-    .from("coupons")
-    .select("*")
-    .eq("restaurant_id", restaurantId)
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabase.rpc('get_admin_coupons', {
+    p_restaurant_id: restaurantId,
+  });
 
   if (error) throw new Error(error.message);
-  return (data || []).map((c) => toCamelCase<Coupon>(c));
+
+  console.log('✅ SUCCESS - Coupons retrieved');
+
+  return (data || []).map((c: any) => toCamelCase<Coupon>(c));
 };
 
 export const createCoupon = async (
   payload: CreateCouponPayload,
 ): Promise<Coupon> => {
+  console.log('🔍 DEBUG - Starting createCoupon');
+
   const restaurantId = await getCurrentRestaurantId();
   if (!restaurantId) throw new Error("No restaurant found");
 
-  const { data, error } = await supabase
-    .from("coupons")
-    .insert({
-      restaurant_id: restaurantId,
-      code: payload.code,
-      description: payload.description,
-      type: payload.type,
-      discount_percentage: payload.discountPercentage,
-      discount_amount_cents: payload.discountAmountCents,
-      minimum_order_cents: payload.minimumOrderCents,
-      maximum_discount_cents: payload.maximumDiscountCents,
-      valid_from: payload.validFrom?.toISOString(),
-      valid_until: payload.validUntil?.toISOString(),
-      max_uses: payload.maxUses,
-      max_uses_per_customer: payload.maxUsesPerCustomer,
-      is_active: payload.isActive ?? true,
-    })
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc('create_admin_coupon', {
+    p_restaurant_id: restaurantId,
+    p_code: payload.code,
+    p_type: payload.type,
+    p_description: payload.description || null,
+    p_discount_percentage: payload.discountPercentage || null,
+    p_discount_amount_cents: payload.discountAmountCents || null,
+    p_minimum_order_cents: payload.minimumOrderCents || 0,
+    p_maximum_discount_cents: payload.maximumDiscountCents || null,
+    p_valid_from: payload.validFrom?.toISOString() || null,
+    p_valid_until: payload.validUntil?.toISOString() || null,
+    p_max_uses: payload.maxUses || null,
+    p_max_uses_per_customer: payload.maxUsesPerCustomer || 1,
+    p_is_active: payload.isActive ?? true,
+    p_first_order_only: false,
+    p_specific_customer_ids: null,
+  });
 
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Coupon created');
+
   return toCamelCase<Coupon>(data);
 };
 
 export const updateCoupon = async (
   payload: UpdateCouponPayload,
 ): Promise<Coupon> => {
+  console.log('🔍 DEBUG - Starting updateCoupon for id:', payload.id);
+
   const restaurantId = await getCurrentRestaurantId();
   if (!restaurantId) throw new Error("No restaurant found");
 
-  const updateData: Record<string, unknown> = {};
-  if (payload.code !== undefined) updateData.code = payload.code;
-  if (payload.description !== undefined)
-    updateData.description = payload.description;
-  if (payload.type !== undefined) updateData.type = payload.type;
-  if (payload.discountPercentage !== undefined)
-    updateData.discount_percentage = payload.discountPercentage;
-  if (payload.discountAmountCents !== undefined)
-    updateData.discount_amount_cents = payload.discountAmountCents;
-  if (payload.minimumOrderCents !== undefined)
-    updateData.minimum_order_cents = payload.minimumOrderCents;
-  if (payload.maximumDiscountCents !== undefined)
-    updateData.maximum_discount_cents = payload.maximumDiscountCents;
-  if (payload.validFrom)
-    updateData.valid_from = payload.validFrom.toISOString();
-  if (payload.validUntil)
-    updateData.valid_until = payload.validUntil.toISOString();
-  if (payload.maxUses !== undefined) updateData.max_uses = payload.maxUses;
-  if (payload.maxUsesPerCustomer !== undefined)
-    updateData.max_uses_per_customer = payload.maxUsesPerCustomer;
-  if (payload.isActive !== undefined) updateData.is_active = payload.isActive;
-
-  const { data, error } = await supabase
-    .from("coupons")
-    .update(updateData)
-    .eq("id", payload.id)
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc('update_admin_coupon', {
+    p_coupon_id: payload.id,
+    p_code: payload.code || null,
+    p_description: payload.description || null,
+    p_type: payload.type || null,
+    p_discount_percentage: payload.discountPercentage || null,
+    p_discount_amount_cents: payload.discountAmountCents || null,
+    p_minimum_order_cents: payload.minimumOrderCents || null,
+    p_maximum_discount_cents: payload.maximumDiscountCents || null,
+    p_valid_from: payload.validFrom?.toISOString() || null,
+    p_valid_until: payload.validUntil?.toISOString() || null,
+    p_max_uses: payload.maxUses || null,
+    p_max_uses_per_customer: payload.maxUsesPerCustomer || null,
+    p_is_active: payload.isActive ?? null,
+    p_first_order_only: null,
+    p_specific_customer_ids: null,
+  });
 
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Coupon updated');
+
   return toCamelCase<Coupon>(data);
 };
 
 export const deleteCoupon = async (id: string): Promise<void> => {
-  const { error } = await supabase.from("coupons").delete().eq("id", id);
+  console.log('🔍 DEBUG - Starting deleteCoupon for id:', id);
+
+  const { error } = await supabase.rpc('delete_admin_coupon', {
+    p_coupon_id: id,
+  });
+
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Coupon deleted');
 };
 
 export const toggleCouponStatus = async (
   id: string,
   isActive: boolean,
 ): Promise<void> => {
-  const { error } = await supabase
-    .from("coupons")
-    .update({ is_active: isActive })
-    .eq("id", id);
+  console.log('🔍 DEBUG - Starting toggleCouponStatus for id:', id);
+
+  const { error } = await supabase.rpc('toggle_coupon_status', {
+    p_coupon_id: id,
+    p_is_active: isActive,
+  });
+
   if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Coupon status toggled');
 };

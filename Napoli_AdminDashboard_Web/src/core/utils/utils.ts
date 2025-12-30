@@ -8,16 +8,28 @@ export function cn(...inputs: ClassValue[]) {
 // Type for database records (snake_case from Supabase)
 type DatabaseRecord = Record<string, unknown>;
 
-// Helper to convert snake_case to camelCase
-export function toCamelCase<T>(obj: DatabaseRecord): T {
-  const result: DatabaseRecord = {};
-  for (const key in obj) {
-    const camelKey = key.replace(/_([a-z])/g, (_, letter: string) =>
-      letter.toUpperCase(),
-    );
-    result[camelKey] = obj[key];
+// Helper to convert snake_case to camelCase (recursive)
+export function toCamelCase<T>(obj: any): T {
+  if (obj === null || obj === undefined) {
+    return obj;
   }
-  return result as T;
+
+  if (Array.isArray(obj)) {
+    return obj.map((item) => toCamelCase(item)) as T;
+  }
+
+  if (typeof obj === 'object' && obj.constructor === Object) {
+    const result: DatabaseRecord = {};
+    for (const key in obj) {
+      const camelKey = key.replace(/_([a-z])/g, (_, letter: string) =>
+        letter.toUpperCase(),
+      );
+      result[camelKey] = toCamelCase(obj[key]);
+    }
+    return result as T;
+  }
+
+  return obj;
 }
 
 // Helper to convert camelCase to snake_case

@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { OrderStatus } from "@/components/order-status";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { TableCell, TableRow } from "@/components/ui/table";
 import {
   useApproveOrderMutation,
@@ -46,7 +46,12 @@ export function OrderTableRow({ order }: OrderTableRowProps) {
               <span className="sr-only">Detalles del pedido</span>
             </Button>
           </DialogTrigger>
-          <OrderDetails orderId={order.id} />
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogTitle className="sr-only">
+              Detalles del Pedido {order.orderNumber || order.id.slice(0, 8)}
+            </DialogTitle>
+            <OrderDetails orderId={order.id} />
+          </DialogContent>
         </Dialog>
       </TableCell>
       <TableCell className="font-mono text-xs font-medium">
@@ -92,8 +97,7 @@ export function OrderTableRow({ order }: OrderTableRowProps) {
             onClick={() => dispatchOrderFn(order.id)}
             disabled={isDispatchingOrder}
             variant="outline"
-            size="sm"
-          >
+            size="sm">
             <ArrowRight className="mr-2 h-3 w-3" />
             En preparación
           </Button>

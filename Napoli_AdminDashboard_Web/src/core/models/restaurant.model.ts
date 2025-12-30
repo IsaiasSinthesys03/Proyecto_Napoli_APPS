@@ -50,6 +50,8 @@ export interface Restaurant {
   bankAccountClabe: string | null;
   bankAccountName: string | null;
   bankName: string | null;
+  driverCommissionType: string | null;
+  driverCommissionValue: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -57,12 +59,39 @@ export interface Restaurant {
 export interface UpdateRestaurantProfileParams {
   name?: string;
   description?: string | null;
+  email?: string;
+  phone?: string | null;
+  whatsapp?: string | null;
+  website?: string | null;
+}
+
+export interface UpdateRestaurantBrandingParams {
   logoUrl?: string | null;
   bannerUrl?: string | null;
-  phone?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+}
+
+export interface UpdateRestaurantLocationParams {
   address?: string | null;
   city?: string | null;
   state?: string | null;
+  country?: string | null;
+  postalCode?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  timezone?: string;
+}
+
+export interface UpdateRestaurantRegionalSettingsParams {
+  currencyCode?: string;
+  currencySymbol?: string;
+  currencyPosition?: "before" | "after";
+  decimalSeparator?: string;
+  thousandsSeparator?: string;
+  decimalPlaces?: number;
+  taxRatePercentage?: number;
+  taxIncludedInPrices?: boolean;
 }
 
 export interface UpdateRestaurantSettingsParams {
@@ -87,6 +116,8 @@ export interface UpdateRestaurantSettingsParams {
     string,
     { enabled: boolean; open: string | null; close: string | null }
   >;
+  driverCommissionType?: string | null;
+  driverCommissionValue?: number | null;
 }
 
 export interface RegisterRestaurantParams {

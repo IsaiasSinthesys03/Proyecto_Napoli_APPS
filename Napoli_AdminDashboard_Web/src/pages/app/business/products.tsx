@@ -34,6 +34,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { MultiSelect } from "@/components/ui/multi-select";
 import {
   Select,
   SelectContent,
@@ -52,6 +53,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { useAddons } from "@/core/hooks/useAddons";
 import { useCategories } from "@/core/hooks/useCategories";
 import {
   useCreateProduct,
@@ -61,6 +63,7 @@ import {
   useUpdateProduct,
 } from "@/core/hooks/useProducts";
 import { Product } from "@/core/models/product.model";
+import { assignAddonsToProduct } from "@/core/services/product.service";
 
 const productFormSchema = z.object({
   name: z.string().min(3, "El nombre debe tener al menos 3 caracteres."),
@@ -72,6 +75,7 @@ const productFormSchema = z.object({
   image: z.instanceof(File).optional(),
   isFeatured: z.boolean().optional(),
   preparationTimeMinutes: z.coerce.number().optional(),
+  addonIds: z.array(z.string()).optional(),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -79,6 +83,7 @@ type ProductFormValues = z.infer<typeof productFormSchema>;
 export function Products() {
   const { data: products, isLoading, isError } = useProducts();
   const { data: categories } = useCategories();
+  const { data: addons } = useAddons();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -108,7 +113,7 @@ export function Products() {
 
   async function handleProductSubmit(data: ProductFormValues) {
     if (editingProduct) {
-      await updateProductMutation.mutateAsync({
+      const updatedProduct = await updateProductMutation.mutateAsync({
         payload: {
           id: editingProduct.id,
           name: data.name,
@@ -120,8 +125,13 @@ export function Products() {
         },
         image: data.image,
       });
+
+      // Assign addons after updating
+      if (data.addonIds) {
+        await assignAddonsToProduct(updatedProduct.id, data.addonIds);
+      }
     } else {
-      await createProductMutation.mutateAsync({
+      const newProduct = await createProductMutation.mutateAsync({
         payload: {
           name: data.name,
           description: data.description,
@@ -132,6 +142,11 @@ export function Products() {
         },
         image: data.image,
       });
+
+      // Assign addons after creating
+      if (data.addonIds) {
+        await assignAddonsToProduct(newProduct.id, data.addonIds);
+      }
     }
     setEditingProduct(null);
     setIsDialogOpen(false);
@@ -177,6 +192,7 @@ export function Products() {
                 onSubmit={handleProductSubmit}
                 onCancel={() => setIsDialogOpen(false)}
                 categories={categories || []}
+                addons={addons || []}
                 isSubmitting={
                   createProductMutation.isPending ||
                   updateProductMutation.isPending
@@ -343,6 +359,7 @@ interface ProductFormProps {
   onSubmit: (data: ProductFormValues) => void;
   onCancel: () => void;
   categories: { id: string; name: string }[];
+  addons: { id: string; name: string }[];
   isSubmitting: boolean;
 }
 
@@ -351,6 +368,7 @@ function ProductForm({
   onSubmit,
   onCancel,
   categories,
+  addons,
   isSubmitting,
 }: ProductFormProps) {
   const form = useForm<ProductFormValues>({
@@ -362,6 +380,7 @@ function ProductForm({
       categoryId: product?.categoryId || "",
       isFeatured: product?.isFeatured || false,
       preparationTimeMinutes: product?.preparationTimeMinutes ?? 0,
+      addonIds: [],
     },
   });
 
@@ -459,6 +478,25 @@ function ProductForm({
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="addonIds"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Complementos Disponibles</FormLabel>
+              <FormControl>
+                <MultiSelect
+                  options={addons.map((a) => ({ value: a.id, label: a.name }))}
+                  selected={field.value || []}
+                  onChange={field.onChange}
+                  placeholder="Seleccionar complementos..."
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="grid grid-cols-2 gap-4">
           <FormField

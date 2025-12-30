@@ -97,11 +97,10 @@ export function Promotions() {
         const payload = {
           code: data.code,
           description: data.description,
-          type: data.type,
+          type: "percentage",
           discountPercentage: data.discount,
-          // Map other coupon fields...
-          validFrom: data.startDate,
-          validUntil: data.endDate,
+          validFrom: data.dateRange?.from,
+          validUntil: data.dateRange?.to,
           isActive: true,
         };
 
@@ -120,8 +119,8 @@ export function Promotions() {
           description: data.description,
           type: data.type,
           discountPercentage: data.discount,
-          startDate: data.startDate,
-          endDate: data.endDate,
+          startDate: data.dateRange?.from,
+          endDate: data.dateRange?.to,
           isActive: true,
         };
 

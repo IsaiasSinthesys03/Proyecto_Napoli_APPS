@@ -13,265 +13,226 @@ import {
   MonthRevenue,
 } from "@/core/models/metrics.model";
 
-interface OrderWithTotal {
-  total_cents: number | null;
-}
-
-interface OrderWithCreatedAt extends OrderWithTotal {
-  created_at: string;
-}
-
-interface OrderItem {
-  quantity: number;
-  product_name: string;
-}
-
-interface OrderWithItems {
-  id: string;
-  created_at: string;
-  total_cents: number | null;
-  customer_snapshot: { name?: string } | null;
-  order_items: Array<{
-    product_name: string;
-    quantity: number;
-    unit_price_cents: number | null;
-  }>;
-}
-
+/**
+ * Get today's order count vs yesterday
+ */
 export const getDayOrdersAmount = async (): Promise<DayOrdersAmount> => {
-  const restaurantId = await getCurrentRestaurantId();
-  if (!restaurantId) throw new Error("No restaurant found");
+  console.log("🔍 DEBUG - Starting getDayOrdersAmount");
 
-  // Get today's orders
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const { count: todayCount } = await supabase
-    .from("orders")
-    .select("*", { count: "exact", head: true })
-    .eq("restaurant_id", restaurantId)
-    .gte("created_at", today.toISOString());
-
-  const { count: yesterdayCount } = await supabase
-    .from("orders")
-    .select("*", { count: "exact", head: true })
-    .eq("restaurant_id", restaurantId)
-    .gte("created_at", yesterday.toISOString())
-    .lt("created_at", today.toISOString());
-
-  return {
-    amount: todayCount || 0,
-    diffFromYesterday: (todayCount || 0) - (yesterdayCount || 0),
-  };
-};
-
-export const getMonthOrdersAmount = async (): Promise<MonthOrdersAmount> => {
-  const restaurantId = await getCurrentRestaurantId();
-  if (!restaurantId) throw new Error("No restaurant found");
-
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
-
-  const { count: thisMonth } = await supabase
-    .from("orders")
-    .select("*", { count: "exact", head: true })
-    .eq("restaurant_id", restaurantId)
-    .gte("created_at", monthStart.toISOString());
-
-  const { count: lastMonth } = await supabase
-    .from("orders")
-    .select("*", { count: "exact", head: true })
-    .eq("restaurant_id", restaurantId)
-    .gte("created_at", lastMonthStart.toISOString())
-    .lte("created_at", lastMonthEnd.toISOString());
-
-  return {
-    amount: thisMonth || 0,
-    diffFromLastMonth: (thisMonth || 0) - (lastMonth || 0),
-  };
-};
-
-export const getMonthCanceledOrdersAmount =
-  async (): Promise<MonthCanceledOrdersAmount> => {
+  try {
     const restaurantId = await getCurrentRestaurantId();
     if (!restaurantId) throw new Error("No restaurant found");
 
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+    console.log("📦 DATA - restaurant_id:", restaurantId);
 
-    const { count: thisMonth } = await supabase
-      .from("orders")
-      .select("*", { count: "exact", head: true })
-      .eq("restaurant_id", restaurantId)
-      .eq("status", "cancelled")
-      .gte("created_at", monthStart.toISOString());
+    const { data, error } = await supabase.rpc("get_day_orders_amount", {
+      p_restaurant_id: restaurantId,
+    });
 
-    const { count: lastMonth } = await supabase
-      .from("orders")
-      .select("*", { count: "exact", head: true })
-      .eq("restaurant_id", restaurantId)
-      .eq("status", "cancelled")
-      .gte("created_at", lastMonthStart.toISOString())
-      .lte("created_at", lastMonthEnd.toISOString());
+    if (error) {
+      console.error("❌ ERROR - RPC error:", error);
+      throw new Error(`Error getting day orders amount: ${error.message}`);
+    }
 
-    return {
-      amount: thisMonth || 0,
-      diffFromLastMonth: (thisMonth || 0) - (lastMonth || 0),
-    };
+    console.log("✅ SUCCESS - Day orders amount retrieved:", data);
+    return data as DayOrdersAmount;
+  } catch (error) {
+    console.error("❌ ERROR - Failed to get day orders amount:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get this month's order count vs last month
+ */
+export const getMonthOrdersAmount = async (): Promise<MonthOrdersAmount> => {
+  console.log("🔍 DEBUG - Starting getMonthOrdersAmount");
+
+  try {
+    const restaurantId = await getCurrentRestaurantId();
+    if (!restaurantId) throw new Error("No restaurant found");
+
+    console.log("📦 DATA - restaurant_id:", restaurantId);
+
+    const { data, error } = await supabase.rpc("get_month_orders_amount", {
+      p_restaurant_id: restaurantId,
+    });
+
+    if (error) {
+      console.error("❌ ERROR - RPC error:", error);
+      throw new Error(`Error getting month orders amount: ${error.message}`);
+    }
+
+    console.log("✅ SUCCESS - Month orders amount retrieved:", data);
+    return data as MonthOrdersAmount;
+  } catch (error) {
+    console.error("❌ ERROR - Failed to get month orders amount:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get this month's canceled orders vs last month
+ */
+export const getMonthCanceledOrdersAmount =
+  async (): Promise<MonthCanceledOrdersAmount> => {
+    console.log("🔍 DEBUG - Starting getMonthCanceledOrdersAmount");
+
+    try {
+      const restaurantId = await getCurrentRestaurantId();
+      if (!restaurantId) throw new Error("No restaurant found");
+
+      console.log("📦 DATA - restaurant_id:", restaurantId);
+
+      const { data, error } = await supabase.rpc(
+        "get_month_canceled_orders_amount",
+        {
+          p_restaurant_id: restaurantId,
+        },
+      );
+
+      if (error) {
+        console.error("❌ ERROR - RPC error:", error);
+        throw new Error(
+          `Error getting month canceled orders amount: ${error.message}`,
+        );
+      }
+
+      console.log("✅ SUCCESS - Month canceled orders amount retrieved:", data);
+      return data as MonthCanceledOrdersAmount;
+    } catch (error) {
+      console.error(
+        "❌ ERROR - Failed to get month canceled orders amount:",
+        error,
+      );
+      throw error;
+    }
   };
 
+/**
+ * Get this month's revenue vs last month
+ */
 export const getMonthRevenue = async (): Promise<MonthRevenue> => {
-  const restaurantId = await getCurrentRestaurantId();
-  if (!restaurantId) throw new Error("No restaurant found");
+  console.log("🔍 DEBUG - Starting getMonthRevenue");
 
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+  try {
+    const restaurantId = await getCurrentRestaurantId();
+    if (!restaurantId) throw new Error("No restaurant found");
 
-  const { data: thisMonthData } = await supabase
-    .from("orders")
-    .select("total_cents")
-    .eq("restaurant_id", restaurantId)
-    .eq("status", "delivered")
-    .gte("created_at", monthStart.toISOString());
+    console.log("📦 DATA - restaurant_id:", restaurantId);
 
-  const { data: lastMonthData } = await supabase
-    .from("orders")
-    .select("total_cents")
-    .eq("restaurant_id", restaurantId)
-    .eq("status", "delivered")
-    .gte("created_at", lastMonthStart.toISOString())
-    .lte("created_at", lastMonthEnd.toISOString());
+    const { data, error } = await supabase.rpc("get_month_revenue", {
+      p_restaurant_id: restaurantId,
+    });
 
-  const thisMonthTotal = (
-    (thisMonthData as OrderWithTotal[] | null) || []
-  ).reduce((sum, o) => sum + (o.total_cents || 0), 0);
-  const lastMonthTotal = (
-    (lastMonthData as OrderWithTotal[] | null) || []
-  ).reduce((sum, o) => sum + (o.total_cents || 0), 0);
+    if (error) {
+      console.error("❌ ERROR - RPC error:", error);
+      throw new Error(`Error getting month revenue: ${error.message}`);
+    }
 
-  return {
-    receipt: thisMonthTotal / 100,
-    diffFromLastMonth: (thisMonthTotal - lastMonthTotal) / 100,
-  };
+    console.log("✅ SUCCESS - Month revenue retrieved:", data);
+    return data as MonthRevenue;
+  } catch (error) {
+    console.error("❌ ERROR - Failed to get month revenue:", error);
+    throw error;
+  }
 };
 
+/**
+ * Get top 10 most ordered products
+ */
 export const getPopularProducts = async (
-  _params: GetPopularProductsParams,
+  params: GetPopularProductsParams,
 ): Promise<GetPopularProductsResponse> => {
-  const restaurantId = await getCurrentRestaurantId();
-  if (!restaurantId) throw new Error("No restaurant found");
+  console.log("🔍 DEBUG - Starting getPopularProducts");
 
-  // Query order_items joined with products, grouped by product
-  const { data, error } = await supabase
-    .from("order_items")
-    .select(
-      `
-      quantity,
-      product_name,
-      order:orders!inner(restaurant_id, created_at, status)
-    `,
-    )
-    .eq("order.restaurant_id", restaurantId)
-    .eq("order.status", "delivered");
+  try {
+    const restaurantId = await getCurrentRestaurantId();
+    if (!restaurantId) throw new Error("No restaurant found");
 
-  if (error) throw new Error(error.message);
+    console.log("📦 DATA - restaurant_id:", restaurantId, "params:", params);
 
-  // Aggregate by product name
-  const productCounts: Record<string, number> = {};
-  ((data as OrderItem[] | null) || []).forEach((item) => {
-    const name = item.product_name;
-    productCounts[name] = (productCounts[name] || 0) + item.quantity;
-  });
+    const { data, error } = await supabase.rpc("get_popular_products", {
+      p_restaurant_id: restaurantId,
+      p_from: params.from?.toISOString() || null,
+      p_to: params.to?.toISOString() || null,
+    });
 
-  return Object.entries(productCounts)
-    .map(([product, amount]) => ({ product, amount }))
-    .sort((a, b) => b.amount - a.amount)
-    .slice(0, 10);
+    if (error) {
+      console.error("❌ ERROR - RPC error:", error);
+      throw new Error(`Error getting popular products: ${error.message}`);
+    }
+
+    console.log("✅ SUCCESS - Popular products retrieved:", data);
+    return (data as GetPopularProductsResponse) || [];
+  } catch (error) {
+    console.error("❌ ERROR - Failed to get popular products:", error);
+    throw error;
+  }
 };
 
+/**
+ * Get daily revenue breakdown for a date range
+ */
 export const getDailyRevenueInPeriod = async (
   params: GetDailyRevenueInPeriodParams,
 ): Promise<GetDailyRevenueInPeriodResponse> => {
-  const restaurantId = await getCurrentRestaurantId();
-  if (!restaurantId) throw new Error("No restaurant found");
+  console.log("🔍 DEBUG - Starting getDailyRevenueInPeriod");
 
-  let query = supabase
-    .from("orders")
-    .select("created_at, total_cents")
-    .eq("restaurant_id", restaurantId)
-    .eq("status", "delivered");
+  try {
+    const restaurantId = await getCurrentRestaurantId();
+    if (!restaurantId) throw new Error("No restaurant found");
 
-  if (params.from) {
-    query = query.gte("created_at", params.from.toISOString());
+    console.log("📦 DATA - restaurant_id:", restaurantId, "params:", params);
+
+    const { data, error } = await supabase.rpc("get_daily_revenue_in_period", {
+      p_restaurant_id: restaurantId,
+      p_from: params.from?.toISOString() || null,
+      p_to: params.to?.toISOString() || null,
+    });
+
+    if (error) {
+      console.error("❌ ERROR - RPC error:", error);
+      throw new Error(`Error getting daily revenue in period: ${error.message}`);
+    }
+
+    console.log("✅ SUCCESS - Daily revenue in period retrieved:", data);
+    return (data as GetDailyRevenueInPeriodResponse) || [];
+  } catch (error) {
+    console.error("❌ ERROR - Failed to get daily revenue in period:", error);
+    throw error;
   }
-  if (params.to) {
-    query = query.lte("created_at", params.to.toISOString());
-  }
-
-  const { data, error } = await query;
-  if (error) throw new Error(error.message);
-
-  // Group by date
-  const dailyTotals: Record<string, number> = {};
-  ((data as OrderWithCreatedAt[] | null) || []).forEach((order) => {
-    const date = order.created_at.split("T")[0];
-    dailyTotals[date] = (dailyTotals[date] || 0) + (order.total_cents || 0);
-  });
-
-  return Object.entries(dailyTotals)
-    .map(([date, cents]) => ({ date, receipt: cents / 100 }))
-    .sort((a, b) => a.date.localeCompare(b.date));
 };
 
+/**
+ * Get detailed sales transactions with items
+ */
 export const getSalesTransactions = async (
   params: GetSalesTransactionsParams,
 ): Promise<GetSalesTransactionsResponse> => {
-  const restaurantId = await getCurrentRestaurantId();
-  if (!restaurantId) throw new Error("No restaurant found");
+  console.log("🔍 DEBUG - Starting getSalesTransactions");
 
-  let query = supabase
-    .from("orders")
-    .select(
-      `
-      id,
-      created_at,
-      total_cents,
-      customer_snapshot,
-      order_items(product_name, quantity, unit_price_cents)
-    `,
-    )
-    .eq("restaurant_id", restaurantId)
-    .eq("status", "delivered")
-    .order("created_at", { ascending: false })
-    .limit(50);
+  try {
+    const restaurantId = await getCurrentRestaurantId();
+    if (!restaurantId) throw new Error("No restaurant found");
 
-  if (params.from) {
-    query = query.gte("created_at", params.from.toISOString());
+    console.log("📦 DATA - restaurant_id:", restaurantId, "params:", params);
+
+    const { data, error } = await supabase.rpc("get_sales_transactions", {
+      p_restaurant_id: restaurantId,
+      p_from: params.from?.toISOString() || null,
+      p_to: params.to?.toISOString() || null,
+    });
+
+    if (error) {
+      console.error("❌ ERROR - RPC error:", error);
+      throw new Error(`Error getting sales transactions: ${error.message}`);
+    }
+
+    console.log("✅ SUCCESS - Sales transactions retrieved:", data);
+    return (data as GetSalesTransactionsResponse) || [];
+  } catch (error) {
+    console.error("❌ ERROR - Failed to get sales transactions:", error);
+    throw error;
   }
-  if (params.to) {
-    query = query.lte("created_at", params.to.toISOString());
-  }
-
-  const { data, error } = await query;
-  if (error) throw new Error(error.message);
-
-  return ((data as OrderWithItems[] | null) || []).map((order) => ({
-    id: order.id,
-    date: order.created_at,
-    customerName: order.customer_snapshot?.name || "Cliente",
-    total: (order.total_cents || 0) / 100,
-    items: (order.order_items || []).map((item) => ({
-      product: item.product_name,
-      quantity: item.quantity,
-      price: (item.unit_price_cents || 0) / 100,
-    })),
-  }));
 };

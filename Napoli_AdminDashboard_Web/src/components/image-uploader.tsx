@@ -7,11 +7,13 @@ import { Label } from "@/components/ui/label";
 interface ImageUploaderProps {
   onFileSelected: (file: File | null) => void;
   initialImageUrl?: string | null;
+  disabled?: boolean;
 }
 
 export function ImageUploader({
   onFileSelected,
   initialImageUrl,
+  disabled = false,
 }: ImageUploaderProps) {
   const [preview, setPreview] = useState<string | null>(
     initialImageUrl || null,
@@ -77,6 +79,7 @@ export function ImageUploader({
         className="sr-only"
         accept="image/png, image/jpeg, image/jpg"
         onChange={handleFileSelected}
+        disabled={disabled}
       />
     </div>
   );
