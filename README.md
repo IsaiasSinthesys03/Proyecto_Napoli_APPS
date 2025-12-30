@@ -399,5 +399,8 @@ Para preguntas o soporte, por favor abre un issue en GitHub.
 
 <div align="center">
   <strong>Hecho con ESTRES, NOCHES SIN DORMIR Y ANSIEDAD por Isaias Sinthesys para la pizzería Napoli</strong>
+</div>
+
+<div align="center">
   <strong>GASPAR ES UN MALDITO SOBREEXPLOTADOR</strong>
 </div>
