@@ -211,10 +211,26 @@ cd Proyecto_Napoli_APPS
 
 ```bash
 cd Napoli_AdminDashboard_Web
-npm install
+
+# Instalar dependencias
+pnpm install  # o npm install
+
+# Configurar variables de entorno
 cp .env.example .env.local
 # Editar .env.local con tus credenciales de Supabase
-npm run dev
+
+# Iniciar servidor de desarrollo
+pnpm run dev  # o npm run dev
+```
+
+El dashboard estará disponible en: **http://localhost:5173**
+
+**Comandos disponibles**:
+```bash
+pnpm run dev          # Servidor de desarrollo
+pnpm run build        # Build para producción
+pnpm run preview      # Preview del build
+pnpm run lint         # Linter
 ```
 
 ### 3. Configurar CustomerApp Mobile
@@ -382,5 +398,6 @@ Para preguntas o soporte, por favor abre un issue en GitHub.
 ---
 
 <div align="center">
-  <strong>Hecho con ❤️ para pizzerías</strong>
+  <strong>Hecho con ESTRES, NOCHES SIN DORMIR Y ANSIEDAD por Isaias Sinthesys para la pizzería Napoli</strong>
+  <strong>GASPAR ES UN MALDITO SOBREEXPLOTADOR</strong>
 </div>
