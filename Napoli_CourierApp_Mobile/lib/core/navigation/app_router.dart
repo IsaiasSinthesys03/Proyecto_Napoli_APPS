@@ -4,6 +4,8 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/pending_approval_screen.dart';
 import '../../features/auth/domain/entities/driver.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
+import '../../features/auth/presentation/cubit/auth_state.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/orders/presentation/screens/order_detail_screen.dart';
 import '../../features/orders/domain/entities/order.dart';
@@ -62,8 +64,17 @@ final appRouter = GoRouter(
                   path: AppRoutes.orderDetail,
                   builder: (context, state) {
                     final orderId = state.pathParameters['id']!;
-                    final driverId =
-                        state.uri.queryParameters['driverId'] ?? '1';
+
+                    // ✅ Obtener el driverId real del driver autenticado
+                    // En lugar de usar '1' hardcodeado, obtenemos el ID del AuthCubit
+                    String driverId =
+                        state.uri.queryParameters['driverId'] ?? '';
+                    if (driverId.isEmpty) {
+                      final authState = getIt<AuthCubit>().state;
+                      if (authState is Authenticated) {
+                        driverId = authState.driver.id;
+                      }
+                    }
 
                     // Get order from extra if navigating from history
                     final order = state.extra as Order?;

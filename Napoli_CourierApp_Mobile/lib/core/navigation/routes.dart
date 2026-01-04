@@ -15,5 +15,11 @@ class AppRoutes {
   static const editProfile = 'edit';
 
   // Full paths for navigation
-  static String orderDetailPath(String orderId) => '/dashboard/order/$orderId';
+  static String orderDetailPath(String orderId, {String? driverId}) {
+    final path = '/dashboard/order/$orderId';
+    if (driverId != null && driverId.isNotEmpty) {
+      return '$path?driverId=$driverId';
+    }
+    return path;
+  }
 }

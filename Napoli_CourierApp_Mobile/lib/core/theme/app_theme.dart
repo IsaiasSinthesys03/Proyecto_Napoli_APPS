@@ -56,7 +56,7 @@ class AppTheme {
           foregroundColor: lightColorScheme.onSecondary,
           elevation: AppDimensions.elevationLow,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+            borderRadius: BorderRadius.circular(10), // Doc: 10px
           ),
           padding: const EdgeInsets.symmetric(
             vertical: AppDimensions.spacingM,
@@ -115,25 +115,25 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.inputFillLight, // Gris muy claro
-        contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
+        contentPadding: const EdgeInsets.all(16), // Doc: 16px uniform
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          borderRadius: BorderRadius.circular(12), // Doc: 12px
           borderSide: const BorderSide(color: AppColors.dividerLight),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.dividerLight, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: lightColorScheme.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: lightColorScheme.error, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: lightColorScheme.error, width: 2),
         ),
         labelStyle: const TextStyle(
@@ -222,7 +222,7 @@ class AppTheme {
           foregroundColor: darkColorScheme.onSecondary,
           elevation: AppDimensions.elevationLow,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+            borderRadius: BorderRadius.circular(10),
           ),
           padding: const EdgeInsets.symmetric(
             vertical: AppDimensions.spacingM,
@@ -281,25 +281,25 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.inputFillDark, // Gris muy oscuro
-        contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
+        contentPadding: const EdgeInsets.all(16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.dividerDark),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.dividerDark, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: darkColorScheme.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: darkColorScheme.error, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: darkColorScheme.error, width: 2),
         ),
         labelStyle: const TextStyle(

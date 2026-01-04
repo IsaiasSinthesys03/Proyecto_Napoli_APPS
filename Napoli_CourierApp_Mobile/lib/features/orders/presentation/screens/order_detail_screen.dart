@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -18,6 +19,7 @@ import '../../../dashboard/presentation/cubit/dashboard_cubit.dart';
 import '../../../profile/presentation/cubit/profile_cubit.dart';
 import '../../../../core/di/injection.dart';
 import '../widgets/order_items_list.dart';
+import '../widgets/order_action_confirmation_dialog.dart';
 
 /// Pantalla de detalle de pedido
 class OrderDetailScreen extends StatelessWidget {
@@ -55,114 +57,118 @@ class OrderDetailScreen extends StatelessWidget {
     }
 
     // Si no, usar OrdersCubit para cargarlo (navegación desde dashboard)
-    return Scaffold(
-      appBar: AppBar(title: const Text('Detalle del Pedido')),
-      body: BlocConsumer<OrdersCubit, OrdersState>(
-        listener: (context, state) {
-          if (state is OrdersError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: theme.colorScheme.error,
-              ),
-            );
-          } else if (state is OrderDetailLoaded) {
-            if (state.order.status == OrderStatus.delivered) {
-              // Refrescar toda la app
-              print('🟢 Order delivered, refreshing app state...');
-              getIt<DashboardCubit>().reloadDriver();
-              getIt<ProfileCubit>().reloadProfile();
-
+    // Envolver con BlocProvider.value para asegurar que usa la misma instancia singleton
+    return BlocProvider<OrdersCubit>.value(
+      value: GetIt.instance<OrdersCubit>(),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Detalle del Pedido')),
+        body: BlocConsumer<OrdersCubit, OrdersState>(
+          listener: (context, state) {
+            if (state is OrdersError) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Pedido entregado exitosamente'),
-                  backgroundColor: AppColors.successGreen,
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: theme.colorScheme.error,
                 ),
               );
+            } else if (state is OrderDetailLoaded) {
+              if (state.order.status == OrderStatus.delivered) {
+                // Refrescar toda la app
+                print('🟢 Order delivered, refreshing app state...');
+                getIt<DashboardCubit>().reloadDriver();
+                getIt<ProfileCubit>().reloadProfile();
 
-              // Volver al dashboard
-              if (context.canPop()) {
-                context.pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Pedido entregado exitosamente'),
+                    backgroundColor: AppColors.successGreen,
+                  ),
+                );
+
+                // Volver al dashboard
+                if (context.canPop()) {
+                  context.pop();
+                }
               }
             }
-          }
-        },
-        builder: (context, state) {
-          if (state is OrdersLoading) {
-            return const LoadingIndicator();
-          }
+          },
+          builder: (context, state) {
+            if (state is OrdersLoading) {
+              return const LoadingIndicator();
+            }
 
-          if (state is OrderDetailLoaded || state is OrderUpdating) {
-            final order = state is OrderDetailLoaded
-                ? state.order
-                : (state as OrderUpdating).order;
+            if (state is OrderDetailLoaded || state is OrderUpdating) {
+              final order = state is OrderDetailLoaded
+                  ? state.order
+                  : (state as OrderUpdating).order;
 
-            final isUpdating = state is OrderUpdating;
+              final isUpdating = state is OrderUpdating;
 
-            return Column(
-              children: [
-                // Contenido scrolleable
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(AppDimensions.spacingL),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Número de pedido y estado
-                        _buildHeader(context, order),
-                        const SizedBox(height: AppDimensions.spacingL),
+              return Column(
+                children: [
+                  // Contenido scrolleable
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(AppDimensions.spacingL),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Número de pedido y estado
+                          _buildHeader(context, order),
+                          const SizedBox(height: AppDimensions.spacingL),
 
-                        // Info del cliente
-                        CustomerInfoCard(
-                          name: order.customerName,
-                          phone: order.customerPhone,
-                          onCallPressed: () async {
-                            print(
-                              '🟢 Call button pressed for: ${order.customerPhone}',
-                            );
-                            await phoneService.call(order.customerPhone);
-                          },
-                        ),
-                        const SizedBox(height: AppDimensions.spacingL),
+                          // Info del cliente
+                          CustomerInfoCard(
+                            name: order.customerName,
+                            phone: order.customerPhone,
+                            onCallPressed: () async {
+                              print(
+                                '🟢 Call button pressed for: ${order.customerPhone}',
+                              );
+                              await phoneService.call(order.customerPhone);
+                            },
+                          ),
+                          const SizedBox(height: AppDimensions.spacingL),
 
-                        // Dirección de entrega
-                        DeliveryAddressCard(
-                          address: order.deliveryAddress,
-                          onNavigatePressed: () async {
-                            print('🟢 Navigate button pressed');
-                            print(
-                              '🟢 Address: ${order.deliveryAddress.street}',
-                            );
-                            await navigationService.openMaps(
-                              latitude: order.deliveryAddress.latitude,
-                              longitude: order.deliveryAddress.longitude,
-                              label: order.deliveryAddress.street,
-                            );
-                          },
-                        ),
-                        const SizedBox(height: AppDimensions.spacingL),
+                          // Dirección de entrega
+                          DeliveryAddressCard(
+                            address: order.deliveryAddress,
+                            onNavigatePressed: () async {
+                              print('🟢 Navigate button pressed');
+                              print(
+                                '🟢 Address: ${order.deliveryAddress.street}',
+                              );
+                              await navigationService.openMaps(
+                                latitude: order.deliveryAddress.latitude,
+                                longitude: order.deliveryAddress.longitude,
+                                label: order.deliveryAddress.street,
+                              );
+                            },
+                          ),
+                          const SizedBox(height: AppDimensions.spacingL),
 
-                        // Items del pedido
-                        OrderItemsList(items: order.items),
-                        const SizedBox(height: AppDimensions.spacingL),
+                          // Items del pedido
+                          OrderItemsList(items: order.items),
+                          const SizedBox(height: AppDimensions.spacingL),
 
-                        // Resumen de pago
-                        _buildPaymentSummary(context, order),
-                      ],
+                          // Resumen de pago
+                          _buildPaymentSummary(context, order),
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                // Botón de acción (fijo abajo)
-                if (order.status != OrderStatus.delivered &&
-                    order.status != OrderStatus.cancelled)
-                  _buildActionButton(context, order, isUpdating),
-              ],
-            );
-          }
+                  // Botón de acción (fijo abajo)
+                  if (order.status != OrderStatus.delivered &&
+                      order.status != OrderStatus.cancelled)
+                    _buildActionButton(context, order, isUpdating),
+                ],
+              );
+            }
 
-          return const Center(child: Text('No se pudo cargar el pedido'));
-        },
+            return const Center(child: Text('No se pudo cargar el pedido'));
+          },
+        ),
       ),
     );
   }
@@ -416,51 +422,66 @@ class OrderDetailScreen extends StatelessWidget {
 
   IconData _getActionIcon(OrderStatus status) {
     switch (status) {
-      case OrderStatus.available:
+      case OrderStatus.ready:
         return Icons.check_circle;
       case OrderStatus.accepted:
         return Icons.shopping_bag;
-      case OrderStatus.pickedUp:
+      case OrderStatus.delivering:
         return Icons.delivery_dining;
-      case OrderStatus.onTheWay:
+      case OrderStatus.delivered:
         return Icons.done_all;
-      default:
+      case OrderStatus.cancelled:
+      case OrderStatus.pending:
+      case OrderStatus.processing:
         return Icons.check;
     }
   }
 
   Color _getStatusColor(OrderStatus status) {
     switch (status) {
-      case OrderStatus.available:
+      case OrderStatus.ready:
         return AppColors.navigationBlue;
       case OrderStatus.accepted:
         return AppColors.warningOrange;
-      case OrderStatus.pickedUp:
-      case OrderStatus.onTheWay:
+      case OrderStatus.delivering:
         return AppColors.primaryGreen;
       case OrderStatus.delivered:
         return AppColors.successGreen;
       case OrderStatus.cancelled:
         return AppColors.errorRed;
+      case OrderStatus.pending:
+      case OrderStatus.processing:
+        return AppColors.textSecondaryLight;
     }
   }
 
-  void _handleAction(BuildContext context, order) {
-    final cubit = context.read<OrdersCubit>();
+  void _handleAction(BuildContext context, Order order) {
+    // ✅ Usar GetIt directamente en lugar de context.read
+    // Esto funciona tanto desde dashboard como desde historial
+    final cubit = getIt<OrdersCubit>();
 
-    switch (order.status) {
-      case OrderStatus.available:
-        cubit.acceptOrder(orderId, driverId);
-        break;
-      case OrderStatus.accepted:
-        cubit.confirmPickup(orderId, driverId);
-        break;
-      case OrderStatus.pickedUp:
-      case OrderStatus.onTheWay:
-        cubit.markDelivered(orderId, driverId);
-        break;
-      default:
-        break;
-    }
+    showDialog(
+      context: context,
+      builder: (dialogContext) => OrderActionConfirmationDialog(
+        currentStatus: order.status,
+        onConfirm: () {
+          // ✅ Usar el cubit capturado, no el context del diálogo
+          switch (order.status) {
+            case OrderStatus.ready:
+              cubit.acceptOrder(orderId, driverId);
+              break;
+            case OrderStatus.accepted:
+              cubit.confirmPickup(orderId, driverId);
+              break;
+            case OrderStatus.delivering:
+              cubit.markDelivered(orderId, driverId);
+              break;
+            default:
+              break;
+          }
+        },
+        onCancel: () {},
+      ),
+    );
   }
 }

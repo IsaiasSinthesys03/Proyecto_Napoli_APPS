@@ -1,52 +1,41 @@
-/// Estados posibles de un pedido
 enum OrderStatus {
-  /// Pedido disponible para ser aceptado
-  available,
-
-  /// Pedido aceptado por el repartidor
+  pending,
   accepted,
-
-  /// Pedido recogido del restaurante
-  pickedUp,
-
-  /// Repartidor en camino al cliente
-  onTheWay,
-
-  /// Pedido entregado
+  processing,
+  ready,
+  delivering,
   delivered,
-
-  /// Pedido cancelado
   cancelled;
 
   String get displayName {
     switch (this) {
-      case OrderStatus.available:
-        return 'Disponible';
+      case OrderStatus.pending:
+        return 'Pendiente';
       case OrderStatus.accepted:
-        return 'Aceptado';
-      case OrderStatus.pickedUp:
-        return 'Recogido';
-      case OrderStatus.onTheWay:
-        return 'En Camino';
+        return 'Aceptada';
+      case OrderStatus.processing:
+        return 'En preparación';
+      case OrderStatus.ready:
+        return 'Lista para recoger';
+      case OrderStatus.delivering:
+        return 'En camino';
       case OrderStatus.delivered:
-        return 'Entregado';
+        return 'Entregada';
       case OrderStatus.cancelled:
-        return 'Cancelado';
+        return 'Cancelada';
     }
   }
 
-  /// Obtiene el botón de acción correspondiente al estado
   String get actionButtonLabel {
     switch (this) {
-      case OrderStatus.available:
+      case OrderStatus.ready:
         return 'Aceptar Pedido';
       case OrderStatus.accepted:
-        return 'Confirmar Recogida';
-      case OrderStatus.pickedUp:
-      case OrderStatus.onTheWay:
+        // Asumiendo que 'accepted' es cuando el repartidor ya aceptó pero no ha recogido
+        return 'Recoger Pedido';
+      case OrderStatus.delivering:
         return 'Marcar Entregado';
-      case OrderStatus.delivered:
-      case OrderStatus.cancelled:
+      default:
         return '';
     }
   }

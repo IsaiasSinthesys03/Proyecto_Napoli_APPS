@@ -140,11 +140,11 @@ class HistoryRemoteDataSource {
       case 'pending':
       case 'processing':
       case 'ready':
-        return OrderStatus.available;
+        return OrderStatus.ready;
       case 'accepted':
         return OrderStatus.accepted;
       case 'delivering':
-        return OrderStatus.pickedUp;
+        return OrderStatus.delivering;
       case 'delivered':
         return OrderStatus.delivered;
       case 'cancelled':

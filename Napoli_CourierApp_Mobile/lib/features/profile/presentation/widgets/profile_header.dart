@@ -96,7 +96,7 @@ class ProfileHeader extends StatelessWidget {
               const Icon(Icons.star, color: Colors.amber, size: 20),
               const SizedBox(width: 4),
               Text(
-                (driver.averageRating ?? 0.0).toStringAsFixed(1),
+                (driver.averageRating ?? 0).toStringAsFixed(1),
                 style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
               ),
             ],

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart' hide Order;
 import '../../domain/entities/order.dart';
 import '../../domain/entities/order_status.dart';
@@ -24,12 +25,16 @@ class OrdersRepositoryImpl implements OrdersRepository {
   @override
   Future<Either<String, List<Order>>> getActiveOrders(String driverId) async {
     try {
-      final orders = await dataSource.getMyOrders(
-        driverId,
-        status: 'delivering',
+      debugPrint(
+        '🔍 OrdersRepositoryImpl.getActiveOrders called for: $driverId',
+      );
+      final orders = await dataSource.getActiveOrders(driverId);
+      debugPrint(
+        '✅ OrdersRepositoryImpl.getActiveOrders returned ${orders.length} orders',
       );
       return right(orders);
     } catch (e) {
+      debugPrint('❌ OrdersRepositoryImpl.getActiveOrders error: $e');
       return left(e.toString().replaceAll('Exception: ', ''));
     }
   }

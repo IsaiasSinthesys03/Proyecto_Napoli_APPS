@@ -33,7 +33,7 @@ class MockOrdersDataSource {
       total: 1350.0,
       driverEarnings: 150.0,
       distanceKm: 1.2,
-      status: OrderStatus.available,
+      status: OrderStatus.ready,
       createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
     ),
 
@@ -60,7 +60,7 @@ class MockOrdersDataSource {
       total: 2200.0,
       driverEarnings: 180.0,
       distanceKm: 2.5,
-      status: OrderStatus.available,
+      status: OrderStatus.ready,
       createdAt: DateTime.now().subtract(const Duration(minutes: 10)),
     ),
 
@@ -86,7 +86,7 @@ class MockOrdersDataSource {
       total: 1770.0,
       driverEarnings: 160.0,
       distanceKm: 1.8,
-      status: OrderStatus.available,
+      status: OrderStatus.ready,
       createdAt: DateTime.now().subtract(const Duration(minutes: 3)),
     ),
   ];
@@ -94,7 +94,7 @@ class MockOrdersDataSource {
   /// Obtiene todos los pedidos disponibles
   Future<List<Order>> getAvailableOrders() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    return _mockOrders.where((o) => o.status == OrderStatus.available).toList();
+    return _mockOrders.where((o) => o.status == OrderStatus.ready).toList();
   }
 
   /// Obtiene pedidos activos de un driver
@@ -103,7 +103,7 @@ class MockOrdersDataSource {
     return _mockOrders
         .where(
           (o) =>
-              o.status != OrderStatus.available &&
+              o.status != OrderStatus.ready &&
               o.status != OrderStatus.delivered &&
               o.status != OrderStatus.cancelled,
         )
@@ -150,7 +150,7 @@ class MockOrdersDataSource {
       case OrderStatus.accepted:
         updatedOrder = updatedOrder.copyWith(acceptedAt: now);
         break;
-      case OrderStatus.pickedUp:
+      case OrderStatus.delivering:
         updatedOrder = updatedOrder.copyWith(pickedUpAt: now);
         break;
       case OrderStatus.delivered:

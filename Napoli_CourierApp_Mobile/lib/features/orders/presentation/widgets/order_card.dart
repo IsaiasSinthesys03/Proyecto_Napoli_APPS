@@ -1,135 +1,162 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_text_styles.dart';
-import '../../../../../core/theme/app_dimensions.dart';
-import '../../../../../core/theme/app_colors.dart';
-import '../../../../../core/widgets/pressable_scale.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_dimensions.dart';
+import '../../../../core/navigation/routes.dart';
 import '../../domain/entities/order.dart';
-import '../../domain/entities/order_status.dart';
+import '../../../dashboard/presentation/cubit/dashboard_cubit.dart';
+import '../../../dashboard/presentation/cubit/dashboard_state.dart';
 
-/// Card para mostrar un pedido en la lista
 class OrderCard extends StatelessWidget {
   final Order order;
-  final VoidCallback onTap;
+  final bool isActive;
 
-  const OrderCard({required this.order, required this.onTap, super.key});
+  const OrderCard({required this.order, this.isActive = false, super.key});
 
   @override
   Widget build(BuildContext context) {
-    print('🟦 OrderCard building for order: ${order.orderNumber}');
     final theme = Theme.of(context);
 
-    return Container(
+    return Card(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-        border: Border.all(
-          color: theme.colorScheme.primary.withValues(alpha: 0.2),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      elevation: 4,
+      shadowColor: Colors.black.withValues(alpha: 0.1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: () {
-          print('🔵 OrderCard tapped: ${order.orderNumber} (ID: ${order.id})');
-          onTap();
+          // Obtener el driverId del DashboardCubit para pasarlo en la navegación
+          final dashboardCubit = context.read<DashboardCubit>();
+          String? driverId;
+          if (dashboardCubit.state is DashboardLoaded) {
+            driverId = (dashboardCubit.state as DashboardLoaded).driver.id;
+          }
+
+          context.push(
+            AppRoutes.orderDetailPath(order.id, driverId: driverId),
+            extra: order,
+          );
         },
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.spacingM),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header: Número y estado
+              // Header: ID y Ganancia
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    order.orderNumber,
-                    style: AppTextStyles.h4.copyWith(
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingS,
+                      horizontal: 8,
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(
-                        order.status,
-                      ).withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusSmall,
-                      ),
+                      color: AppColors.primaryGreen.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      order.status.displayName,
-                      style: AppTextStyles.caption.copyWith(
-                        color: _getStatusColor(order.status),
+                      '#${order.orderNumber}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.primaryGreen,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
+                  Text(
+                    '\$${order.driverEarnings.toStringAsFixed(2)}',
+                    style: AppTextStyles.h3.copyWith(
+                      color: AppColors.primaryGreen,
+                    ),
+                  ),
                 ],
+              ),
+              const SizedBox(height: 8),
+              // Items count centered and red
+              Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.shopping_bag_outlined,
+                      size: 16,
+                      color: AppColors.primaryRed,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${order.totalItems} items',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.primaryRed,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: AppDimensions.spacingM),
 
-              // Dirección
-              Row(
-                children: [
-                  Icon(
-                    Icons.location_on,
-                    size: 16,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingS),
-                  Expanded(
-                    child: Text(
-                      order.deliveryAddress.street,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: theme.colorScheme.onSurface,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+              // Ruta Visual
+              _buildRouteStep(
+                context,
+                icon: Icons.store,
+                title: 'Barrio Napoli',
+                subtitle: 'Recoger pedido',
+                isStart: true,
               ),
-              const SizedBox(height: AppDimensions.spacingS),
+              _buildConnector(),
+              _buildRouteStep(
+                context,
+                icon: Icons.location_on,
+                title: order.customerName,
+                subtitle: order.deliveryAddress.street,
+                isEnd: true,
+              ),
 
-              // Info: Distancia y ganancia
+              const SizedBox(height: AppDimensions.spacingM),
+              const Divider(),
+
+              // Footer: Distancia y Acción
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(Icons.route, size: 16, color: theme.colorScheme.primary),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${order.distanceKm} km',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: theme.colorScheme.onSurface,
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.access_time,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Hace 5 min', // Esto debería ser dinámico
+                        style: AppTextStyles.caption.copyWith(
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Icon(
+                        Icons.directions_bike,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '2.5 km', // Esto debería venir de la orden
+                        style: AppTextStyles.caption.copyWith(
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (!isActive)
+                    Text(
+                      'VER DETALLES >',
+                      style: AppTextStyles.buttonSmall.copyWith(
+                        color: AppColors.primaryRed,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingM),
-                  Icon(
-                    Icons.attach_money,
-                    size: 16,
-                    color: AppColors.successGreen,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '\$${order.driverEarnings.toStringAsFixed(0)}',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.successGreen,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  Icon(Icons.chevron_right, color: theme.colorScheme.primary),
                 ],
               ),
             ],
@@ -139,19 +166,62 @@ class OrderCard extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(OrderStatus status) {
-    switch (status) {
-      case OrderStatus.available:
-        return AppColors.navigationBlue;
-      case OrderStatus.accepted:
-        return AppColors.warningOrange;
-      case OrderStatus.pickedUp:
-      case OrderStatus.onTheWay:
-        return AppColors.primaryGreen;
-      case OrderStatus.delivered:
-        return AppColors.successGreen;
-      case OrderStatus.cancelled:
-        return AppColors.errorRed;
-    }
+  Widget _buildRouteStep(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    bool isStart = false,
+    bool isEnd = false,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: isStart ? AppColors.accentBeige : AppColors.inputFillLight,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+            color: isStart ? AppColors.earthBrownDark : AppColors.primaryRed,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondaryLight,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildConnector() {
+    return Container(
+      margin: const EdgeInsets.only(
+        left: 18,
+      ), // Alineado con el centro del icono
+      height: 20,
+      width: 2,
+      color: AppColors.dividerLight,
+    );
   }
 }

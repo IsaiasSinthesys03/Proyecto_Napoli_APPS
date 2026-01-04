@@ -115,7 +115,7 @@ Future<void> initDependencies() async {
   );
 
   // Cubits
-  getIt.registerFactory<OrdersCubit>(
+  getIt.registerLazySingleton<OrdersCubit>(
     () => OrdersCubit(getIt<OrdersRepository>()),
   );
 

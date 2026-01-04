@@ -16,69 +16,92 @@ class ProfileInfoCard extends StatelessWidget {
     final driver = profile.driver;
     final theme = Theme.of(context);
 
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingL),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Información Personal', style: AppTextStyles.h3),
-            const SizedBox(height: AppDimensions.spacingM),
-
-            _buildInfoRow(
-              icon: Icons.email_outlined,
-              label: 'Email',
-              value: driver.email,
-              theme: theme,
-            ),
-            const Divider(height: AppDimensions.spacingL),
-
-            _buildInfoRow(
-              icon: Icons.phone_outlined,
-              label: 'Teléfono',
-              value: driver.phone,
-              theme: theme,
-            ),
-            const Divider(height: AppDimensions.spacingL),
-
-            _buildInfoRow(
-              icon: Icons.directions_car_outlined,
-              label: 'Vehículo',
-              value: driver.vehicleType.displayName,
-              theme: theme,
-            ),
-            const Divider(height: AppDimensions.spacingL),
-
-            _buildInfoRow(
-              icon: Icons.pin_outlined,
-              label: 'Placa',
-              value: driver.licensePlate ?? 'No especificada',
-              theme: theme,
-            ),
-            const Divider(height: AppDimensions.spacingL),
-
-            _buildInfoRow(
-              icon: Icons.calendar_today_outlined,
-              label: 'Miembro desde',
-              value: DateFormat('dd/MM/yyyy').format(driver.createdAt),
-              theme: theme,
-            ),
-            const Divider(height: AppDimensions.spacingL),
-
-            _buildInfoRow(
-              icon: Icons.verified_outlined,
-              label: 'Estado',
-              value: driver.status.displayName,
-              theme: theme,
-              valueColor: _getStatusColor(driver.status.name),
-            ),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+          child: Text('Información Personal', style: AppTextStyles.h3),
         ),
-      ),
+        Card(
+          color: Colors.white,
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingL),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildInfoRow(
+                  icon: Icons.email_outlined,
+                  label: 'Email',
+                  value: driver.email,
+                  theme: theme,
+                ),
+                const SizedBox(height: AppDimensions.spacingM),
+                _buildInfoRow(
+                  icon: Icons.phone_outlined,
+                  label: 'Teléfono',
+                  value: driver.phone,
+                  theme: theme,
+                ),
+                const SizedBox(height: AppDimensions.spacingM),
+                _buildInfoRow(
+                  icon: Icons.calendar_today_outlined,
+                  label: 'Miembro desde',
+                  value: DateFormat('dd/MM/yyyy').format(driver.createdAt),
+                  theme: theme,
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: AppDimensions.spacingL),
+
+        // Sección Vehículo
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+          child: Text('Vehículo', style: AppTextStyles.h3),
+        ),
+        Card(
+          color: Colors.white,
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingL),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildInfoRow(
+                  icon: Icons.directions_car_outlined,
+                  label: 'Tipo',
+                  value: driver.vehicleType.displayName,
+                  theme: theme,
+                ),
+                const SizedBox(height: AppDimensions.spacingM),
+                _buildInfoRow(
+                  icon: Icons.pin_outlined,
+                  label: 'Placa',
+                  value: driver.licensePlate ?? 'No especificada',
+                  theme: theme,
+                ),
+                const SizedBox(height: AppDimensions.spacingM),
+                _buildInfoRow(
+                  icon: Icons.verified_outlined,
+                  label: 'Estado',
+                  value: driver.status.displayName,
+                  theme: theme,
+                  valueColor: _getStatusColor(driver.status.name),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -91,7 +114,14 @@ class ProfileInfoCard extends StatelessWidget {
   }) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: AppColors.primaryGreen),
+        Container(
+          padding: const EdgeInsets.all(AppDimensions.spacingS),
+          decoration: BoxDecoration(
+            color: AppColors.primaryGreen.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
+          ),
+          child: Icon(icon, size: 20, color: AppColors.primaryGreen),
+        ),
         const SizedBox(width: AppDimensions.spacingM),
         Expanded(
           child: Column(
@@ -99,8 +129,9 @@ class ProfileInfoCard extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
                 ),
               ),
               const SizedBox(height: 2),

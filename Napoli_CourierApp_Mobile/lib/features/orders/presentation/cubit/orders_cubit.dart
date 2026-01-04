@@ -1,104 +1,157 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/entities/order.dart';
 import '../../domain/repositories/orders_repository.dart';
-import '../../domain/entities/order_status.dart';
 import 'orders_state.dart';
 
 /// Cubit para gestionar pedidos
 class OrdersCubit extends Cubit<OrdersState> {
   final OrdersRepository repository;
+  Order? _currentOrder; // Guardar la orden actual para mantener datos
 
   OrdersCubit(this.repository) : super(const OrdersInitial()) {
-    print('📦 OrdersCubit created');
+    debugPrint('📦 OrdersCubit created');
   }
 
-  /// Carga todos los pedidos (disponibles y activos)
+  /// Carga todos los pedidos (disponibles y activos) - Sin mostrar loading para mantener smooth
   Future<void> loadOrders(String driverId) async {
-    print('📦 OrdersCubit.loadOrders called for driver: $driverId');
-    emit(const OrdersLoading());
-    print('📦 OrdersCubit emitted OrdersLoading state');
+    debugPrint('📦 OrdersCubit.loadOrders called for driver: $driverId');
+    // NO emitimos OrdersLoading() aquí para mantener la UI suave
 
     try {
       final availableResult = await repository.getAvailableOrders();
-      print('📦 OrdersCubit got available orders result');
+      debugPrint('📦 OrdersCubit got available orders result');
 
       final activeResult = await repository.getActiveOrders(driverId);
-      print('📦 OrdersCubit got active orders result');
+      debugPrint('📦 OrdersCubit got active orders result');
 
       availableResult.fold(
         (error) {
-          print('❌ OrdersCubit error loading available orders: $error');
-          emit(OrdersError(error));
+          debugPrint('❌ OrdersCubit error loading available orders: $error');
+          // Emit error pero sin bloquear la UI completamente
         },
         (availableOrders) {
-          print(
+          debugPrint(
             '✅ OrdersCubit loaded ${availableOrders.length} available orders',
           );
           activeResult.fold(
             (error) {
-              print('❌ OrdersCubit error loading active orders: $error');
-              emit(OrdersError(error));
+              debugPrint('❌ OrdersCubit error loading active orders: $error');
+              // Emit error pero sin bloquear la UI completamente
             },
             (activeOrders) {
-              print(
+              debugPrint(
                 '✅ OrdersCubit loaded ${activeOrders.length} active orders',
               );
+              // Emitir silenciosamente sin mostrar loading
               emit(
                 OrdersLoaded(
                   availableOrders: availableOrders,
                   activeOrders: activeOrders,
                 ),
               );
-              print('📦 OrdersCubit emitted OrdersLoaded state');
+              debugPrint(
+                '📦 OrdersCubit emitted OrdersLoaded state (smooth update)',
+              );
             },
           );
         },
       );
     } catch (e) {
-      print('❌ OrdersCubit exception in loadOrders: $e');
-      emit(OrdersError(e.toString()));
+      debugPrint('❌ OrdersCubit exception in loadOrders: $e');
+      // No emitimos error aquí para mantener la UI suave
     }
   }
 
   /// Carga un pedido específico
   Future<void> loadOrderDetail(String orderId) async {
-    emit(const OrdersLoading());
+    // NO emitir loading aquí para no perder los datos de la orden actual
+    debugPrint('📦 loadOrderDetail: Cargando detalles completos para $orderId');
 
     final result = await repository.getOrderById(orderId);
 
     result.fold(
-      (error) => emit(OrdersError(error)),
-      (order) => emit(OrderDetailLoaded(order)),
+      (error) {
+        debugPrint('❌ loadOrderDetail error: $error');
+        emit(OrdersError(error));
+      },
+      (order) {
+        debugPrint(
+          '✅ loadOrderDetail: Orden cargada del backend con customerPhone="${order.customerPhone}"',
+        );
+        // Simplemente emitir la orden cargada del backend
+        // que ya tiene todos los datos incluyendo el teléfono
+        emit(OrderDetailLoaded(order));
+      },
+    );
+  }
+
+  /// Establece la orden actual (se usa para preservar datos si es necesario)
+  void setCurrentOrder(Order order) {
+    _currentOrder = order;
+    debugPrint(
+      '📦 OrdersCubit.setCurrentOrder: Guardada orden ${order.id} con customerPhone="${order.customerPhone}"',
     );
   }
 
   /// Acepta un pedido
   Future<void> acceptOrder(String orderId, String driverId) async {
-    final currentState = state;
-    if (currentState is! OrderDetailLoaded) return;
+    try {
+      final result = await repository.acceptOrder(orderId, driverId);
 
-    emit(OrderUpdating(currentState.order));
+      result.fold(
+        (error) {
+          emit(OrdersError(error));
+        },
+        (updatedOrder) {
+          // Fusionar con los datos de la orden anterior para mantener info completa
+          final mergedOrder = _mergeOrderData(_currentOrder, updatedOrder);
+          _currentOrder = mergedOrder;
 
-    final result = await repository.acceptOrder(orderId, driverId);
-
-    result.fold((error) {
-      emit(OrdersError(error));
-      emit(currentState); // Volver al estado anterior
-    }, (updatedOrder) => emit(OrderDetailLoaded(updatedOrder)));
+          // Mostrar el pedido aceptado inmediatamente
+          emit(OrderDetailLoaded(mergedOrder));
+          // Dar tiempo a la UI de procesar el estado
+          Future.delayed(const Duration(milliseconds: 300), () {
+            // Luego recargar la lista completa en background sin bloquear UI
+            loadOrders(driverId);
+          });
+        },
+      );
+    } catch (e) {
+      emit(OrdersError(e.toString()));
+    }
+    // Dar tiempo a que la UI procese el estado
+    await Future.delayed(const Duration(milliseconds: 100));
   }
 
   /// Confirma recogida del pedido
   Future<void> confirmPickup(String orderId, String driverId) async {
-    final currentState = state;
-    if (currentState is! OrderDetailLoaded) return;
+    try {
+      final result = await repository.pickupOrder(orderId, driverId);
 
-    emit(OrderUpdating(currentState.order));
+      result.fold(
+        (error) {
+          emit(OrdersError(error));
+        },
+        (updatedOrder) {
+          // Fusionar con los datos de la orden anterior para mantener info completa
+          final mergedOrder = _mergeOrderData(_currentOrder, updatedOrder);
+          _currentOrder = mergedOrder;
 
-    final result = await repository.pickupOrder(orderId, driverId);
-
-    result.fold((error) {
-      emit(OrdersError(error));
-      emit(currentState);
-    }, (updatedOrder) => emit(OrderDetailLoaded(updatedOrder)));
+          // Mostrar el pedido actualizado inmediatamente
+          emit(OrderDetailLoaded(mergedOrder));
+          // Dar tiempo a la UI de procesar el estado
+          Future.delayed(const Duration(milliseconds: 300), () {
+            // Luego recargar la lista completa en background sin bloquear UI
+            loadOrders(driverId);
+          });
+        },
+      );
+    } catch (e) {
+      emit(OrdersError(e.toString()));
+    }
+    // Dar tiempo a que la UI procese el estado
+    await Future.delayed(const Duration(milliseconds: 100));
   }
 
   /// Marca pedido en camino (same as confirmPickup in our flow)
@@ -108,34 +161,60 @@ class OrdersCubit extends Cubit<OrdersState> {
 
   /// Marca pedido como entregado
   Future<void> markDelivered(String orderId, String driverId) async {
-    final currentState = state;
-    if (currentState is! OrderDetailLoaded) return;
+    try {
+      final result = await repository.completeOrder(orderId, driverId);
 
-    emit(OrderUpdating(currentState.order));
+      result.fold(
+        (error) {
+          emit(OrdersError(error));
+        },
+        (updatedOrder) {
+          // Fusionar con los datos de la orden anterior para mantener info completa
+          final mergedOrder = _mergeOrderData(_currentOrder, updatedOrder);
+          _currentOrder = mergedOrder;
 
-    final result = await repository.completeOrder(orderId, driverId);
-
-    result.fold((error) {
-      emit(OrdersError(error));
-      emit(currentState);
-    }, (updatedOrder) => emit(OrderDetailLoaded(updatedOrder)));
+          // Mostrar el pedido entregado inmediatamente
+          emit(OrderDetailLoaded(mergedOrder));
+          // Dar tiempo a la UI de procesar el estado
+          Future.delayed(const Duration(milliseconds: 300), () {
+            // Luego recargar la lista completa en background sin bloquear UI
+            loadOrders(driverId);
+          });
+        },
+      );
+    } catch (e) {
+      emit(OrdersError(e.toString()));
+    }
+    // Dar tiempo a que la UI procese el estado
+    await Future.delayed(const Duration(milliseconds: 100));
   }
 
-  /// Método auxiliar para actualizar estado
-  Future<void> _updateStatus(
-    String orderId,
-    Future<dynamic> updateFuture,
-  ) async {
-    final currentState = state;
-    if (currentState is! OrderDetailLoaded) return;
+  /// Fusiona datos de dos órdenes, preservando campos no vacíos de la orden original
+  Order _mergeOrderData(Order? originalOrder, Order updatedOrder) {
+    if (originalOrder == null) {
+      debugPrint(
+        '⚠️ _mergeOrderData: originalOrder es null, retornando updatedOrder',
+      );
+      return updatedOrder;
+    }
 
-    emit(OrderUpdating(currentState.order));
+    debugPrint(
+      '📋 _mergeOrderData: originalPhone="${originalOrder.customerPhone}", updatedPhone="${updatedOrder.customerPhone}"',
+    );
 
-    final result = await updateFuture;
+    final merged = updatedOrder.copyWith(
+      customerPhone:
+          updatedOrder.customerPhone.isEmpty || updatedOrder.customerPhone == ""
+          ? originalOrder.customerPhone
+          : updatedOrder.customerPhone,
+      customerName: updatedOrder.customerName.isEmpty
+          ? originalOrder.customerName
+          : updatedOrder.customerName,
+    );
 
-    result.fold((error) {
-      emit(OrdersError(error));
-      emit(currentState); // Volver al estado anterior
-    }, (updatedOrder) => emit(OrderDetailLoaded(updatedOrder)));
+    debugPrint(
+      '📋 _mergeOrderData: MERGED customerPhone="${merged.customerPhone}"',
+    );
+    return merged;
   }
 }

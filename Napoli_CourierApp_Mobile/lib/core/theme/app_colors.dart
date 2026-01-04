@@ -107,4 +107,12 @@ class AppColors {
 
   /// Transparente
   static const Color transparent = Colors.transparent;
+
+  // ============================================
+  // GRADIENTES PIZZERÍA
+  // ============================================
+  static const Color earthBrownDark = Color(0xFF3D2817);
+  static const Color earthBrownMedium = Color(0xFF4A3728);
+  static const Color fireOrange = Color(0xFFFFB347);
+  static const Color toastedRed = Color(0xFFA82015);
 }

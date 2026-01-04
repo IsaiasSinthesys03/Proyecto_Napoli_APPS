@@ -19,99 +19,157 @@ class SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingL),
-            child: Text('Configuración', style: AppTextStyles.h3),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+          child: Text('Configuración', style: AppTextStyles.h3),
+        ),
+        Card(
+          color: Colors.white,
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
           ),
-          const Divider(height: 1),
-
-          // Notificaciones
-          SwitchListTile(
-            secondary: const Icon(
-              Icons.notifications_outlined,
-              color: AppColors.primaryGreen,
-            ),
-            title: const Text('Notificaciones Push'),
-            subtitle: const Text('Recibir alertas de nuevos pedidos'),
-            value: profile.notificationsEnabled,
-            onChanged: onNotificationsChanged,
-            activeColor: AppColors.primaryGreen,
-          ),
-          const Divider(height: 1),
-
-          // Idioma
-          ListTile(
-            leading: const Icon(
-              Icons.language_outlined,
-              color: AppColors.primaryGreen,
-            ),
-            title: const Text('Idioma'),
-            subtitle: const Text('Español'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              // TODO: Implementar selector de idioma
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Próximamente: Selector de idioma'),
-                  duration: Duration(seconds: 2),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Notificaciones
+              Padding(
+                padding: const EdgeInsets.all(AppDimensions.spacingM),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            'Notificaciones Push',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Recibir alertas de nuevos pedidos',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: profile.notificationsEnabled,
+                      onChanged: onNotificationsChanged,
+                      activeColor: AppColors.primaryGreen,
+                    ),
+                  ],
                 ),
-              );
-            },
-          ),
-          const Divider(height: 1),
+              ),
 
-          // Cambiar contraseña
-          ListTile(
-            leading: const Icon(
-              Icons.lock_outline,
-              color: AppColors.primaryGreen,
-            ),
-            title: const Text('Cambiar Contraseña'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: onChangePasswordPressed,
-          ),
-          const Divider(height: 1),
+              // Idioma
+              _buildSettingItem(
+                icon: Icons.language_outlined,
+                title: 'Idioma',
+                subtitle: 'Español',
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Próximamente: Selector de idioma'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
 
-          // Versión de la app
-          ListTile(
-            leading: const Icon(
-              Icons.info_outline,
-              color: AppColors.primaryGreen,
-            ),
-            title: const Text('Versión de la App'),
-            subtitle: Text(profile.appVersion),
-          ),
-          const Divider(height: 1),
+              // Cambiar contraseña
+              _buildSettingItem(
+                icon: Icons.lock_outline,
+                title: 'Cambiar Contraseña',
+                onTap: onChangePasswordPressed,
+              ),
 
-          // Términos y privacidad
-          ListTile(
-            leading: const Icon(
-              Icons.description_outlined,
-              color: AppColors.primaryGreen,
-            ),
-            title: const Text('Términos y Privacidad'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              // TODO: Mostrar términos y condiciones
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Próximamente: Términos y Privacidad'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
+              // Versión de la app
+              _buildSettingItem(
+                icon: Icons.info_outline,
+                title: 'Versión de la App',
+                subtitle: profile.appVersion,
+                onTap: () {},
+              ),
+
+              // Términos y privacidad
+              _buildSettingItem(
+                icon: Icons.description_outlined,
+                title: 'Términos y Privacidad',
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Próximamente: Términos y Privacidad'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSettingItem({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(AppDimensions.spacingM),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppDimensions.spacingS),
+              decoration: BoxDecoration(
+                color: AppColors.primaryGreen.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
+              ),
+              child: Icon(icon, size: 20, color: AppColors.primaryGreen),
+            ),
+            const SizedBox(width: AppDimensions.spacingM),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  if (subtitle != null)
+                    Column(
+                      children: [
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+            if (subtitle == null) const Icon(Icons.chevron_right),
+          ],
+        ),
       ),
     );
   }
