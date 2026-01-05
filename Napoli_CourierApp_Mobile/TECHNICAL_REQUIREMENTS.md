@@ -3,6 +3,7 @@
 This document complements the API Specification with additional technical requirements for database design, real-time features, file handling, and infrastructure.
 
 ---
+## VERCION 3.0
 
 ## 🗄️ Database Schema
 
