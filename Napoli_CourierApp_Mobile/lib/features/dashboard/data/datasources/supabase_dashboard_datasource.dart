@@ -1,24 +1,23 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// DataSource de Supabase para el dashboard
+/// DataSource real para el dashboard usando Supabase
 class SupabaseDashboardDataSource {
-  final SupabaseClient client;
+  final SupabaseClient _client;
 
-  const SupabaseDashboardDataSource(this.client);
+  const SupabaseDashboardDataSource(this._client);
 
-  /// Cambia el estado online del driver usando stored procedure
+  /// Cambia el estado online del driver llamando al stored procedure
   Future<bool> setOnlineStatus(String driverId, bool isOnline) async {
-    print(
-      '🔍 DEBUG - setOnlineStatus called: driverId=$driverId, isOnline=$isOnline',
-    );
-
     try {
-      final response = await client.rpc(
+      print('🔍 DEBUG - setOnlineStatus called');
+      print('📦 DATA - driverId: $driverId, isOnline: $isOnline');
+
+      final response = await _client.rpc(
         'toggle_driver_online_status',
         params: {'p_driver_id': driverId, 'p_is_online': isOnline},
       );
 
-      print('✅ SUCCESS - Online status updated');
+      print('✅ SUCCESS - RPC response: $response');
 
       if (response != null && response['success'] == true) {
         return response['is_online'] as bool;
@@ -33,24 +32,19 @@ class SupabaseDashboardDataSource {
 
   /// Obtiene el estado online del driver desde la base de datos
   Future<bool> getOnlineStatus(String driverId) async {
-    print('🔍 DEBUG - getOnlineStatus called: driverId=$driverId');
-
     try {
-      final response = await client
+      final response = await _client
           .from('drivers')
           .select('is_online')
           .eq('id', driverId)
           .maybeSingle();
 
       if (response == null) {
-        print('⚠️ WARNING - Driver not found');
+        print('⚠️ WARNING - Driver not found: $driverId');
         return false;
       }
 
-      final isOnline = response['is_online'] as bool? ?? false;
-      print('✅ SUCCESS - Online status retrieved: $isOnline');
-
-      return isOnline;
+      return response['is_online'] as bool? ?? false;
     } catch (e) {
       print('❌ ERROR - Failed to get online status: $e');
       return false;
