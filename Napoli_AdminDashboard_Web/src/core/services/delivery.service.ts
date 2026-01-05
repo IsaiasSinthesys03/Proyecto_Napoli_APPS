@@ -200,11 +200,13 @@ export const assignDeliveryMan = async (
 
 export interface ActiveDelivery {
   orderId: string;
+  orderNumber: string;
   driverId: string;
   driverName: string;
   driverPhone: string | null;
   driverVehicleType: string;
-  deliveryAddress: string;
+  addressLabel: string;
+  fullAddress: string;
   customerName: string;
 }
 

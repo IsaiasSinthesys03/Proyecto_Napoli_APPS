@@ -99,10 +99,8 @@ export const useAssignDeliveryManMutation = () => {
       queryClient.invalidateQueries({ queryKey: ["order-details", orderId] });
       toast.success("Repartidor asignado con éxito.");
     },
-    onError: () => {
-      toast.error(
-        "Error al asignar el repartidor, por favor intente de nuevo.",
-      );
+    onError: (error: Error) => {
+      toast.error(error.message || "Error al asignar el repartidor.");
     },
   });
 };

@@ -12,6 +12,7 @@
 --   - p_delivery_fee_cents: Costo de envío en centavos
 --   - p_discount_cents: Descuento en centavos
 --   - p_total_cents: Total en centavos
+--   - p_customer_notes: Notas del cliente (opcional)
 -- Retorna: JSON con la orden creada
 -- Autor: AI Assistant
 -- Fecha: 2024-12-26
@@ -26,7 +27,8 @@ CREATE OR REPLACE FUNCTION create_customer_order(
   p_subtotal_cents INT,
   p_total_cents INT,
   p_delivery_fee_cents INT DEFAULT 0,
-  p_discount_cents INT DEFAULT 0
+  p_discount_cents INT DEFAULT 0,
+  p_customer_notes TEXT DEFAULT NULL
 )
 RETURNS JSON
 LANGUAGE plpgsql
@@ -75,6 +77,7 @@ BEGIN
     order_type,
     address_snapshot,
     customer_snapshot,
+    customer_notes,
     estimated_prep_minutes,
     estimated_delivery_minutes
   )
@@ -93,6 +96,7 @@ BEGIN
     'delivery',
     p_address_snapshot,
     v_customer_snapshot,
+    p_customer_notes,
     30,  -- estimated_prep_minutes (default)
     20   -- estimated_delivery_minutes (default)
   )
@@ -156,8 +160,8 @@ END;
 $$;
 
 -- Comentario de la función
-COMMENT ON FUNCTION create_customer_order(UUID, UUID, JSONB, JSONB, TEXT, INT, INT, INT, INT) IS 
-'Crea una orden con sus items en una transacción';
+COMMENT ON FUNCTION create_customer_order(UUID, UUID, JSONB, JSONB, TEXT, INT, INT, INT, INT, TEXT) IS 
+'Crea una orden con sus items en una transacción, incluyendo notas del cliente';
 
 -- Ejemplo de uso:
 -- SELECT create_customer_order(
@@ -167,7 +171,8 @@ COMMENT ON FUNCTION create_customer_order(UUID, UUID, JSONB, JSONB, TEXT, INT, I
 --   '{"street":"Calle 123","city":"Ciudad","lat":0.0,"lng":0.0}'::jsonb,
 --   'cash',
 --   1000,
+--   1000,
 --   0,
 --   0,
---   1000
+--   'Sin cebolla por favor'
 -- );

@@ -1,19 +1,8 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
 
 import { OrderStatus } from "@/components/order-status";
 import { Timer } from "@/components/timer";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -23,10 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  useAssignDeliveryManMutation,
-  useGetDeliveryMenQuery,
-} from "@/core/hooks/useDelivery";
 import { useGetOrderDetailsQuery } from "@/core/hooks/useOrders";
 
 import { OrderDetailsSkeleton } from "./order-details-skeleton";
@@ -35,38 +20,8 @@ export interface OrderDetailsProps {
   orderId: string;
 }
 
-const assignDeliveryManSchema = z.object({
-  deliveryManId: z.string().nullable(),
-});
-
-type AssignDeliveryManSchema = z.infer<typeof assignDeliveryManSchema>;
-
 export function OrderDetails({ orderId }: OrderDetailsProps) {
   const { data: order } = useGetOrderDetailsQuery(orderId);
-  const { data: deliveryMen } = useGetDeliveryMenQuery();
-  const { mutateAsync: assignDeliveryManFn } = useAssignDeliveryManMutation();
-
-  const {
-    handleSubmit,
-    control,
-    formState: { isSubmitting },
-  } = useForm<AssignDeliveryManSchema>({
-    resolver: zodResolver(assignDeliveryManSchema),
-    defaultValues: {
-      deliveryManId: order?.driver?.id ?? null,
-    },
-  });
-
-  async function handleAssignDeliveryMan(data: AssignDeliveryManSchema) {
-    if (!data.deliveryManId || !order) {
-      return;
-    }
-
-    await assignDeliveryManFn({
-      orderId: order.id,
-      deliveryManId: data.deliveryManId,
-    });
-  }
 
   return (
     <div className="space-y-6">
@@ -136,6 +91,31 @@ export function OrderDetails({ orderId }: OrderDetailsProps) {
                       "No informado"}
                   </TableCell>
                 </TableRow>
+                {order.addressSnapshot && (
+                  <TableRow>
+                    <TableCell className="text-muted-foreground">
+                      Dirección
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="text-sm">
+                        {order.addressSnapshot.street}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {order.addressSnapshot.city}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+                {order.customerNotes && (
+                  <TableRow>
+                    <TableCell className="text-muted-foreground">
+                      Comentarios
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="text-sm">{order.customerNotes}</div>
+                    </TableCell>
+                  </TableRow>
+                )}
                 <TableRow>
                   <TableCell className="text-muted-foreground">
                     Realizado hace
@@ -220,47 +200,6 @@ export function OrderDetails({ orderId }: OrderDetailsProps) {
                 )}
               </TableFooter>
             </Table>
-
-            {["pending", "accepted", "processing", "delivering"].includes(
-              order.status,
-            ) && (
-              <form onSubmit={handleSubmit(handleAssignDeliveryMan)}>
-                <div className="space-y-3">
-                  <h2 className="text-lg font-semibold">Asignar repartidor</h2>
-                  <div className="flex items-center gap-2">
-                    <Controller
-                      name="deliveryManId"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value ?? ""}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar repartidor..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {deliveryMen?.deliveryMen.map((deliveryMan) => (
-                              <SelectItem
-                                key={deliveryMan.id}
-                                value={deliveryMan.id}
-                              >
-                                {deliveryMan.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    <Button type="submit" disabled={isSubmitting}>
-                      {order.driver
-                        ? "Cambiar repartidor"
-                        : "Asignar repartidor"}
-                    </Button>
-                  </div>
-                </div>
-              </form>
-            )}
           </div>
         </>
       ) : (

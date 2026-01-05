@@ -19,6 +19,7 @@ class OrderModel extends Order {
     required super.date,
     required super.address,
     required super.paymentMethod,
+    super.customerNotes,
   }) : super(items: itemsModel);
 
   factory OrderModel.fromJson(Map<String, dynamic> json) =>
@@ -36,6 +37,7 @@ class OrderModel extends Order {
       date: order.date,
       address: order.address,
       paymentMethod: order.paymentMethod,
+      customerNotes: order.customerNotes,
     );
   }
 }

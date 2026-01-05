@@ -20,6 +20,7 @@ class Order extends Equatable {
   final DateTime date;
   final AddressModel address;
   final String paymentMethod;
+  final String? customerNotes;
 
   const Order({
     required this.id,
@@ -30,6 +31,7 @@ class Order extends Equatable {
     required this.date,
     required this.address,
     required this.paymentMethod,
+    this.customerNotes,
   });
 
   @override
@@ -42,5 +44,6 @@ class Order extends Equatable {
     date,
     address,
     paymentMethod,
+    customerNotes,
   ];
 }

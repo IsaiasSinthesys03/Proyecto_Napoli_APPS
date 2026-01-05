@@ -21,7 +21,7 @@ function updateOrderStatusOnCache(
 ) {
   const queryKey = [
     "orders",
-    { page: 1, status: "pending,processing,delivering" },
+    { page: 1, status: ["pending", "accepted", "processing", "ready", "delivering"] },
   ];
   const ordersListCache = queryClient.getQueryData<PaginatedOrders>(queryKey);
 
@@ -63,6 +63,7 @@ export const useApproveOrderMutation = () => {
     onSuccess: (_, orderId) => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+      toast.success("¡Pedido aceptado con éxito!");
     },
     onError: (error: Error) => {
       toast.error("Error al aceptar el pedido: " + error.message);
@@ -94,10 +95,26 @@ export const useDispatchOrderMutation = () => {
     onSuccess: (_, orderId) => {
       updateOrderStatusOnCache(queryClient, orderId, "delivering");
       queryClient.invalidateQueries({ queryKey: ["order-details", orderId] });
-      toast.success(`Pedido ${orderId} enviado.`);
+      toast.success("Pedido enviado con éxito.");
     },
     onError: () => {
       toast.error("Error al enviar el pedido, por favor intente de nuevo.");
+    },
+  });
+};
+
+export const useReadyOrderMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (orderId: string) => OrderService.readyOrder(orderId),
+    onSuccess: (_, orderId) => {
+      updateOrderStatusOnCache(queryClient, orderId, "ready");
+      queryClient.invalidateQueries({ queryKey: ["order-details", orderId] });
+      toast.success("Pedido listo para entrega.");
+    },
+    onError: () => {
+      toast.error("Error al cambiar estado, por favor intente de nuevo.");
     },
   });
 };
@@ -110,7 +127,7 @@ export const useDeliverOrderMutation = () => {
     onSuccess: (_, orderId) => {
       updateOrderStatusOnCache(queryClient, orderId, "delivered");
       queryClient.invalidateQueries({ queryKey: ["order-details", orderId] });
-      toast.success(`Pedido ${orderId} entregado.`);
+      toast.success("Pedido en reparto.");
     },
     onError: () => {
       toast.error("Error al entregar el pedido, por favor intente de nuevo.");
@@ -126,7 +143,7 @@ export const useFinishOrderMutation = () => {
     onSuccess: (_, orderId) => {
       updateOrderStatusOnCache(queryClient, orderId, "delivered");
       queryClient.invalidateQueries({ queryKey: ["order-details", orderId] });
-      toast.success(`Pedido ${orderId} finalizado.`);
+      toast.success("Pedido finalizado con éxito.");
     },
     onError: () => {
       toast.error("Error al finalizar el pedido, por favor intente de nuevo.");

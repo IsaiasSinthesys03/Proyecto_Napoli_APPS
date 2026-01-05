@@ -1,6 +1,8 @@
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 
+import { Button } from "@/components/ui/button";
 import { useGetOrdersQuery } from "@/core/hooks/useOrders";
 import { DeliveryPerson, OrderStatusType } from "@/core/models";
 import { DeliveryPersonInfo } from "@/pages/app/live-orders/delivery-person-info";
@@ -14,10 +16,12 @@ export function Dashboard() {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [selectedDeliveryPerson, setSelectedDeliveryPerson] =
     useState<DeliveryPerson | null>(null);
+  const [previousDeliveryPerson, setPreviousDeliveryPerson] =
+    useState<DeliveryPerson | null>(null);
 
   const { data: orders } = useGetOrdersQuery({
     page: 1,
-    status: ["pending", "processing", "delivering"] as OrderStatusType[],
+    status: ["pending", "accepted", "processing", "ready", "delivering"] as OrderStatusType[],
   });
 
   useEffect(() => {
@@ -34,11 +38,22 @@ export function Dashboard() {
   function handleSelectOrder(orderId: string) {
     setSelectedOrderId(orderId);
     setSelectedDeliveryPerson(null); // Close delivery person info
+    setPreviousDeliveryPerson(null); // Clear previous
   }
 
   function handleSelectDeliveryPerson(person: DeliveryPerson) {
     setSelectedDeliveryPerson(person);
     setSelectedOrderId(null); // Close order details
+    setPreviousDeliveryPerson(null); // Clear previous
+  }
+
+  function handleCloseOrderDetails() {
+    setSelectedOrderId(null);
+    // Restore previous delivery person if it exists
+    if (previousDeliveryPerson) {
+      setSelectedDeliveryPerson(previousDeliveryPerson);
+      setPreviousDeliveryPerson(null);
+    }
   }
 
   return (
@@ -63,19 +78,39 @@ export function Dashboard() {
           </div>
           <div className="col-span-3 flex flex-col gap-4">
             {selectedOrderId && (
-              <>
-                <OrderActionsPanel
-                  orderId={selectedOrderId}
-                  status={
-                    orders?.results.find((o) => o.id === selectedOrderId)
-                      ?.status ?? "pending"
-                  }
-                />
-                <OrderDetails orderId={selectedOrderId} />
-              </>
+              <div className="relative rounded-lg border bg-card p-4">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-2 h-8 w-8 text-muted-foreground hover:text-foreground"
+                  onClick={handleCloseOrderDetails}
+                  title="Cerrar detalles del pedido"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+                <div className="space-y-4 pt-8">
+                  <OrderActionsPanel
+                    orderId={selectedOrderId}
+                    status={
+                      orders?.results.find((o) => o.id === selectedOrderId)
+                        ?.status ?? "pending"
+                    }
+                  />
+                  <OrderDetails orderId={selectedOrderId} />
+                </div>
+              </div>
             )}
             {selectedDeliveryPerson && (
-              <DeliveryPersonInfo person={selectedDeliveryPerson} />
+              <DeliveryPersonInfo
+                person={selectedDeliveryPerson}
+                phone={selectedDeliveryPerson.phone}
+                deliveryCount={selectedDeliveryPerson.deliveryCount}
+                onOrderClick={(orderId) => {
+                  setPreviousDeliveryPerson(selectedDeliveryPerson);
+                  setSelectedOrderId(orderId);
+                  setSelectedDeliveryPerson(null);
+                }}
+              />
             )}
           </div>
         </div>

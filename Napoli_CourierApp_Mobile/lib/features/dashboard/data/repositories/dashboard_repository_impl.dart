@@ -1,10 +1,10 @@
 import 'package:fpdart/fpdart.dart';
 import '../../domain/repositories/dashboard_repository.dart';
-import '../datasources/mock_dashboard_datasource.dart';
+import '../datasources/supabase_dashboard_datasource.dart';
 
 /// Implementación del repositorio del dashboard
 class DashboardRepositoryImpl implements DashboardRepository {
-  final MockDashboardDataSource dataSource;
+  final SupabaseDashboardDataSource dataSource;
 
   const DashboardRepositoryImpl(this.dataSource);
 

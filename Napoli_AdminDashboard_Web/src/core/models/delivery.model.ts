@@ -101,6 +101,19 @@ export interface AssignDeliveryManParams {
   deliveryManId: string;
 }
 
+// Active delivery information
+export interface ActiveDelivery {
+  orderId: string;
+  orderNumber: string;
+  driverId: string;
+  driverName: string;
+  driverPhone: string | null;
+  driverVehicleType: string;
+  addressLabel: string;
+  fullAddress: string;
+  customerName: string;
+}
+
 // For live map display (deferred)
 export interface DeliveryPerson {
   id: string;
@@ -110,4 +123,7 @@ export interface DeliveryPerson {
   address: string;
   latitude?: number;
   longitude?: number;
+  phone?: string | null;
+  deliveryCount?: number;
+  deliveries?: ActiveDelivery[];
 }

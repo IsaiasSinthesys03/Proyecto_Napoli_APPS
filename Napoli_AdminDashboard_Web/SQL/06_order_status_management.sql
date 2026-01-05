@@ -22,6 +22,7 @@ SECURITY DEFINER
 AS $$
 DECLARE
   v_sql TEXT;
+  v_row_count INT;
 BEGIN
   RAISE NOTICE '🔍 DEBUG - update_admin_order_status called';
   RAISE NOTICE '📦 DATA - order_id: %, status: %, timestamp_field: %', 
@@ -34,13 +35,15 @@ BEGIN
       p_timestamp_field
     );
     EXECUTE v_sql USING p_status, p_order_id;
+    GET DIAGNOSTICS v_row_count = ROW_COUNT;
   ELSE
     UPDATE orders 
     SET status = p_status, updated_at = NOW() 
     WHERE id = p_order_id;
+    GET DIAGNOSTICS v_row_count = ROW_COUNT;
   END IF;
   
-  IF NOT FOUND THEN
+  IF v_row_count = 0 THEN
     RAISE NOTICE '❌ ERROR - Order not found: %', p_order_id;
     RAISE EXCEPTION 'Orden no encontrada';
   END IF;
@@ -116,10 +119,38 @@ RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
+DECLARE
+  v_driver_is_online BOOLEAN;
+  v_driver_status TEXT;
+  v_driver_name TEXT;
 BEGIN
   RAISE NOTICE '🔍 DEBUG - assign_driver_to_order called';
   RAISE NOTICE '📦 DATA - order_id: %, driver_id: %', p_order_id, p_driver_id;
   
+  -- Verificar que el repartidor existe y obtener su estado
+  SELECT is_online, status, name
+  INTO v_driver_is_online, v_driver_status, v_driver_name
+  FROM drivers
+  WHERE id = p_driver_id;
+  
+  IF NOT FOUND THEN
+    RAISE NOTICE '❌ ERROR - Driver not found: %', p_driver_id;
+    RAISE EXCEPTION 'Repartidor no encontrado';
+  END IF;
+  
+  -- Validar que el repartidor esté conectado
+  IF v_driver_is_online = false THEN
+    RAISE NOTICE '❌ ERROR - Driver is offline: %', v_driver_name;
+    RAISE EXCEPTION 'El repartidor % está desconectado. Por favor seleccione un repartidor conectado.', v_driver_name;
+  END IF;
+  
+  -- Validar que el repartidor esté activo
+  IF v_driver_status != 'active' THEN
+    RAISE NOTICE '❌ ERROR - Driver is not active: % (status: %)', v_driver_name, v_driver_status;
+    RAISE EXCEPTION 'El repartidor % no está activo (estado: %). Por favor seleccione un repartidor activo.', v_driver_name, v_driver_status;
+  END IF;
+  
+  -- Asignar el repartidor a la orden
   UPDATE orders
   SET 
     driver_id = p_driver_id,
@@ -131,12 +162,12 @@ BEGIN
     RAISE EXCEPTION 'Orden no encontrada';
   END IF;
   
-  RAISE NOTICE '✅ SUCCESS - Driver assigned to order';
+  RAISE NOTICE '✅ SUCCESS - Driver % assigned to order', v_driver_name;
   
 EXCEPTION
   WHEN OTHERS THEN
     RAISE NOTICE '❌ ERROR - Exception in assign_driver_to_order: %', SQLERRM;
-    RAISE EXCEPTION 'Error al asignar repartidor: %', SQLERRM;
+    RAISE;
 END;
 $$;
 

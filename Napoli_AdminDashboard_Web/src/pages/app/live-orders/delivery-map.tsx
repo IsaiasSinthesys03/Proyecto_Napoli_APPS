@@ -28,6 +28,23 @@ export function DeliveryMap({ onSelectDeliveryPerson }: DeliveryMapProps) {
 
   const deliveries = activeDeliveries || [];
 
+  // Agrupar entregas por repartidor (driver_id)
+  const driverMap = new Map<string, typeof deliveries>();
+  deliveries.forEach((delivery) => {
+    const existing = driverMap.get(delivery.driverId) || [];
+    driverMap.set(delivery.driverId, [...existing, delivery]);
+  });
+
+  // Convertir a array de repartidores únicos con sus entregas
+  const uniqueDrivers = Array.from(driverMap.entries()).map(([driverId, driverDeliveries]) => ({
+    driverId,
+    driverName: driverDeliveries[0].driverName,
+    driverVehicleType: driverDeliveries[0].driverVehicleType,
+    driverPhone: driverDeliveries[0].driverPhone,
+    deliveries: driverDeliveries,
+    deliveryCount: driverDeliveries.length,
+  }));
+
   return (
     <Card className="col-span-3">
       <CardHeader>
@@ -41,14 +58,14 @@ export function DeliveryMap({ onSelectDeliveryPerson }: DeliveryMapProps) {
             className="h-full w-full object-cover"
           />
 
-          {deliveries.length === 0 ? (
+          {uniqueDrivers.length === 0 ? (
             <div className="absolute inset-0 flex items-center justify-center bg-black/30">
               <p className="text-lg font-medium text-white">
                 No hay repartidores activos en este momento
               </p>
             </div>
           ) : (
-            deliveries.map((delivery, index) => {
+            uniqueDrivers.map((driver, index) => {
               // Distribute icons across the map based on index
               const positions = [
                 { top: "15%", left: "25%" },
@@ -61,23 +78,31 @@ export function DeliveryMap({ onSelectDeliveryPerson }: DeliveryMapProps) {
 
               return (
                 <div
-                  key={delivery.orderId}
+                  key={driver.driverId}
                   className="absolute cursor-pointer transition-transform hover:scale-125"
                   style={{ top: pos.top, left: pos.left }}
                   onClick={() =>
                     onSelectDeliveryPerson({
-                      id: delivery.driverId,
-                      name: delivery.driverName,
-                      vehicle: delivery.driverVehicleType,
-                      orderId: delivery.orderId,
-                      address: delivery.deliveryAddress,
+                      id: driver.driverId,
+                      name: driver.driverName,
+                      vehicle: driver.driverVehicleType,
+                      orderId: driver.deliveries[0].orderId,
+                      address: driver.deliveries[0].addressLabel,
+                      phone: driver.driverPhone,
+                      deliveryCount: driver.deliveryCount,
+                      deliveries: driver.deliveries,
                     })
                   }
-                  title={`${delivery.driverName} - ${delivery.customerName}`}
+                  title={`${driver.driverName} - ${driver.deliveryCount} entrega${driver.deliveryCount > 1 ? 's' : ''}`}
                 >
                   <div className="relative">
                     <Bike className="h-6 w-6 text-primary" />
                     <MapPin className="absolute -bottom-1 -right-1 h-3 w-3 text-destructive" />
+                    {driver.deliveryCount > 1 && (
+                      <div className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                        {driver.deliveryCount}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -85,10 +110,9 @@ export function DeliveryMap({ onSelectDeliveryPerson }: DeliveryMapProps) {
           )}
         </div>
 
-        {deliveries.length > 0 && (
+        {uniqueDrivers.length > 0 && (
           <div className="mt-4 text-sm text-muted-foreground">
-            {deliveries.length} entrega{deliveries.length > 1 ? "s" : ""} en
-            curso
+            {uniqueDrivers.length} repartidor{uniqueDrivers.length > 1 ? "es" : ""} activo{uniqueDrivers.length > 1 ? "s" : ""} · {deliveries.length} entrega{deliveries.length > 1 ? "s" : ""} en curso
           </div>
         )}
       </CardContent>

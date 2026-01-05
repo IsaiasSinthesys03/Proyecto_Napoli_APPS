@@ -64,9 +64,11 @@ BEGIN
   )
   INTO v_drivers
   FROM drivers
-  WHERE restaurant_id = p_restaurant_id;
+  WHERE restaurant_id = p_restaurant_id
+    AND is_online = true
+    AND status = 'active';
   
-  RAISE NOTICE '✅ SUCCESS - Returning % drivers', json_array_length(COALESCE(v_drivers, '[]'::json));
+  RAISE NOTICE '✅ SUCCESS - Returning % online drivers', json_array_length(COALESCE(v_drivers, '[]'::json));
   
   RETURN COALESCE(v_drivers, '[]'::json);
   

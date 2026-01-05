@@ -74,6 +74,7 @@ class SupabaseOrderDataSource implements OrderRemoteDataSource {
           'p_total_cents': order.total,
           'p_delivery_fee_cents': 0,
           'p_discount_cents': 0,
+          'p_customer_notes': order.customerNotes,
         },
       );
 
@@ -253,6 +254,7 @@ class SupabaseOrderDataSource implements OrderRemoteDataSource {
       date: DateTime.parse(data['created_at'] as String),
       address: _parseAddress(data['address_snapshot']),
       paymentMethod: data['payment_method'] as String? ?? 'cash',
+      customerNotes: data['customer_notes'] as String?,
     );
   }
 

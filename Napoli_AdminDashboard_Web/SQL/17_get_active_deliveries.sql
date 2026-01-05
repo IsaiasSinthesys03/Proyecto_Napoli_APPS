@@ -23,14 +23,27 @@ BEGIN
   SELECT json_agg(
     json_build_object(
       'order_id', o.id,
+      'order_number', o.order_number,
       'driver_id', o.driver_id,
       'driver_name', d.name,
       'driver_phone', d.phone,
       'driver_vehicle_type', d.vehicle_type,
-      'delivery_address', COALESCE(
-        o.address_snapshot->>'street_address',
+      'address_label', COALESCE(
         o.address_snapshot->>'label',
-        'Sin dirección'
+        o.address_snapshot->>'name',
+        o.address_snapshot->>'alias',
+        'Dirección ' || o.order_number
+      ),
+      'full_address', COALESCE(
+        o.address_snapshot->>'street_address',
+        o.address_snapshot->>'address',
+        o.address_snapshot->>'full_address',
+        CONCAT_WS(', ',
+          NULLIF(o.address_snapshot->>'street', ''),
+          NULLIF(o.address_snapshot->>'city', ''),
+          NULLIF(o.address_snapshot->>'state', '')
+        ),
+        'Dirección no disponible'
       ),
       'customer_name', COALESCE(
         o.customer_snapshot->>'name',

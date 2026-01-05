@@ -9,7 +9,7 @@ import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/register_usecase.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
-import '../../features/dashboard/data/datasources/mock_dashboard_datasource.dart';
+import '../../features/dashboard/data/datasources/supabase_dashboard_datasource.dart';
 import '../../features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import '../../features/dashboard/domain/repositories/dashboard_repository.dart';
 import '../../features/dashboard/domain/usecases/toggle_online_status_usecase.dart';
@@ -77,13 +77,13 @@ Future<void> initDependencies() async {
 
   // ========== DASHBOARD ==========
   // DataSources
-  getIt.registerLazySingleton<MockDashboardDataSource>(
-    () => MockDashboardDataSource(getIt<SharedPreferences>()),
+  getIt.registerLazySingleton<SupabaseDashboardDataSource>(
+    () => SupabaseDashboardDataSource(getIt<SupabaseClient>()),
   );
 
   // Repositories
   getIt.registerLazySingleton<DashboardRepository>(
-    () => DashboardRepositoryImpl(getIt<MockDashboardDataSource>()),
+    () => DashboardRepositoryImpl(getIt<SupabaseDashboardDataSource>()),
   );
 
   // UseCases

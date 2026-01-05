@@ -254,6 +254,9 @@ class _OrderConfirmationScreenState extends State<_OrderConfirmationContent> {
       date: DateTime.now(),
       address: finalAddress,
       paymentMethod: _selectedPaymentMethod,
+      customerNotes: _notesController.text.trim().isEmpty
+          ? null
+          : _notesController.text.trim(),
     );
 
     // Guardar orden en Supabase usando OrdersCubit
