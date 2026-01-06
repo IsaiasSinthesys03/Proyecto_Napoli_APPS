@@ -13,9 +13,14 @@ class OrdersRepositoryImpl implements OrdersRepository {
   const OrdersRepositoryImpl(this.dataSource, this.restaurantId);
 
   @override
-  Future<Either<String, List<Order>>> getAvailableOrders() async {
+  Future<Either<String, List<Order>>> getAvailableOrders(
+    String driverId,
+  ) async {
     try {
-      final orders = await dataSource.getAvailableOrders(restaurantId);
+      final orders = await dataSource.getAvailableOrders(
+        restaurantId,
+        driverId,
+      );
       return right(orders);
     } catch (e) {
       return left(e.toString().replaceAll('Exception: ', ''));

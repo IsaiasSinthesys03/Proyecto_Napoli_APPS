@@ -88,7 +88,7 @@ async function updateOrderStatus(
 }
 
 export const approveOrder = async (orderId: string): Promise<void> => {
-  await updateOrderStatus(orderId, "accepted", "accepted_at");
+  await updateOrderStatus(orderId, "processing", "processing_at");
 };
 
 export const processOrder = async (orderId: string): Promise<void> => {

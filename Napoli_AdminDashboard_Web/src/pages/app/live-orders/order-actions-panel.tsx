@@ -53,17 +53,15 @@ export function OrderActionsPanel({ orderId, status }: OrderActionsPanelProps) {
   const { data: deliveryMen } = useGetDeliveryMenQuery();
 
   const handleReadyOrder = async () => {
-    // Si hay repartidor seleccionado, asignar y enviar a reparto
+    // Si hay repartidor seleccionado, asignar primero
     if (selectedDeliveryManId) {
       await assignDeliveryManFn({
         orderId,
         deliveryManId: selectedDeliveryManId,
       });
-      await dispatchOrderFn(orderId);
-    } else {
-      // Si NO hay repartidor, solo marcar como listo (ready)
-      await readyOrderFn(orderId);
     }
+    // Siempre marcar como listo (ready) después de asignar (o si no hay driver)
+    await readyOrderFn(orderId);
   };
 
   const handleAssignAndDispatch = async () => {
@@ -107,7 +105,7 @@ export function OrderActionsPanel({ orderId, status }: OrderActionsPanelProps) {
         </>
       )}
 
-      {(status === "accepted" || status === "ready") && (
+      {(status === "processing" || status === "ready") && (
         <div className="space-y-3">
           <div className="space-y-2">
             <label className="text-sm font-medium">
@@ -130,7 +128,7 @@ export function OrderActionsPanel({ orderId, status }: OrderActionsPanelProps) {
             </Select>
           </div>
 
-          {status === "accepted" ? (
+          {status === "processing" ? (
             <Button
               onClick={handleReadyOrder}
               disabled={isProcessing}

@@ -61,8 +61,8 @@ export const useApproveOrderMutation = () => {
   return useMutation({
     mutationFn: (orderId: string) => OrderService.approveOrder(orderId),
     onSuccess: (_, orderId) => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+      updateOrderStatusOnCache(queryClient, orderId, "processing");
+      queryClient.invalidateQueries({ queryKey: ["order-details", orderId] });
       toast.success("¡Pedido aceptado con éxito!");
     },
     onError: (error: Error) => {

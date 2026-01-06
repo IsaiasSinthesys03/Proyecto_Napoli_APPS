@@ -19,7 +19,7 @@ class OrdersCubit extends Cubit<OrdersState> {
     // NO emitimos OrdersLoading() aquí para mantener la UI suave
 
     try {
-      final availableResult = await repository.getAvailableOrders();
+      final availableResult = await repository.getAvailableOrders(driverId);
       debugPrint('📦 OrdersCubit got available orders result');
 
       final activeResult = await repository.getActiveOrders(driverId);
@@ -28,30 +28,40 @@ class OrdersCubit extends Cubit<OrdersState> {
       availableResult.fold(
         (error) {
           debugPrint('❌ OrdersCubit error loading available orders: $error');
-          // Emit error pero sin bloquear la UI completamente
         },
         (availableOrders) {
           debugPrint(
             '✅ OrdersCubit loaded ${availableOrders.length} available orders',
           );
+          if (availableOrders.isNotEmpty) {
+            availableOrders.forEach(
+              (o) => debugPrint(
+                '  - [Available] ${o.orderNumber}: ${o.status.name}',
+              ),
+            );
+          }
+
           activeResult.fold(
             (error) {
               debugPrint('❌ OrdersCubit error loading active orders: $error');
-              // Emit error pero sin bloquear la UI completamente
             },
             (activeOrders) {
               debugPrint(
                 '✅ OrdersCubit loaded ${activeOrders.length} active orders',
               );
-              // Emitir silenciosamente sin mostrar loading
+              if (activeOrders.isNotEmpty) {
+                activeOrders.forEach(
+                  (o) => debugPrint(
+                    '  - [Active] ${o.orderNumber}: ${o.status.name}',
+                  ),
+                );
+              }
+
               emit(
                 OrdersLoaded(
                   availableOrders: availableOrders,
                   activeOrders: activeOrders,
                 ),
-              );
-              debugPrint(
-                '📦 OrdersCubit emitted OrdersLoaded state (smooth update)',
               );
             },
           );
@@ -59,7 +69,6 @@ class OrdersCubit extends Cubit<OrdersState> {
       );
     } catch (e) {
       debugPrint('❌ OrdersCubit exception in loadOrders: $e');
-      // No emitimos error aquí para mantener la UI suave
     }
   }
 

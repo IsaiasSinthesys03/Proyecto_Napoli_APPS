@@ -5,7 +5,7 @@ import '../entities/order_status.dart';
 /// Repositorio abstracto de pedidos
 abstract class OrdersRepository {
   /// Obtiene todos los pedidos disponibles para el repartidor
-  Future<Either<String, List<Order>>> getAvailableOrders();
+  Future<Either<String, List<Order>>> getAvailableOrders(String driverId);
 
   /// Obtiene los pedidos en curso del repartidor
   Future<Either<String, List<Order>>> getActiveOrders(String driverId);
