@@ -10,6 +10,14 @@ abstract class ProfileRepository {
   /// Actualiza la información del conductor
   Future<Either<String, Driver>> updateDriver(Driver driver);
 
+  /// Actualiza la ubicación actual del conductor (latitud/longitud/timestamp)
+  Future<Either<String, Driver>> updateDriverLocation(
+    String driverId,
+    double latitude,
+    double longitude,
+    DateTime lastLocationUpdate,
+  );
+
   /// Cambia la contraseña del conductor
   Future<Either<String, void>> changePassword(
     String driverId,

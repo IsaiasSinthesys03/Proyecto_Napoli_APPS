@@ -1,16 +1,34 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:geolocator/geolocator.dart';
+
 import '../../domain/entities/order.dart';
 import '../../domain/repositories/orders_repository.dart';
+import '../../../profile/domain/repositories/profile_repository.dart';
+import '../../../../core/services/location_service.dart';
 import 'orders_state.dart';
 
 /// Cubit para gestionar pedidos
 class OrdersCubit extends Cubit<OrdersState> {
   final OrdersRepository repository;
   Order? _currentOrder; // Guardar la orden actual para mantener datos
+  Timer? _locationTimer;
+  String? _trackingDriverId;
+  // Modo de prueba: enviar sólo una ubicación al aceptar pedido
+  // Para producción, establecer en false para iniciar el envío periódico cada 10s
+  final bool _testingSingleSend = false;
 
   OrdersCubit(this.repository) : super(const OrdersInitial()) {
     debugPrint('📦 OrdersCubit created');
+  }
+
+  @override
+  Future<void> close() {
+    _stopLocationTracking();
+    return super.close();
   }
 
   /// Carga todos los pedidos (disponibles y activos) - Sin mostrar loading para mantener smooth
@@ -19,7 +37,7 @@ class OrdersCubit extends Cubit<OrdersState> {
     // NO emitimos OrdersLoading() aquí para mantener la UI suave
 
     try {
-      final availableResult = await repository.getAvailableOrders(driverId);
+      final availableResult = await repository.getAvailableOrders();
       debugPrint('📦 OrdersCubit got available orders result');
 
       final activeResult = await repository.getActiveOrders(driverId);
@@ -28,40 +46,30 @@ class OrdersCubit extends Cubit<OrdersState> {
       availableResult.fold(
         (error) {
           debugPrint('❌ OrdersCubit error loading available orders: $error');
+          // Emit error pero sin bloquear la UI completamente
         },
         (availableOrders) {
           debugPrint(
             '✅ OrdersCubit loaded ${availableOrders.length} available orders',
           );
-          if (availableOrders.isNotEmpty) {
-            availableOrders.forEach(
-              (o) => debugPrint(
-                '  - [Available] ${o.orderNumber}: ${o.status.name}',
-              ),
-            );
-          }
-
           activeResult.fold(
             (error) {
               debugPrint('❌ OrdersCubit error loading active orders: $error');
+              // Emit error pero sin bloquear la UI completamente
             },
             (activeOrders) {
               debugPrint(
                 '✅ OrdersCubit loaded ${activeOrders.length} active orders',
               );
-              if (activeOrders.isNotEmpty) {
-                activeOrders.forEach(
-                  (o) => debugPrint(
-                    '  - [Active] ${o.orderNumber}: ${o.status.name}',
-                  ),
-                );
-              }
-
+              // Emitir silenciosamente sin mostrar loading
               emit(
                 OrdersLoaded(
                   availableOrders: availableOrders,
                   activeOrders: activeOrders,
                 ),
+              );
+              debugPrint(
+                '📦 OrdersCubit emitted OrdersLoaded state (smooth update)',
               );
             },
           );
@@ -69,6 +77,7 @@ class OrdersCubit extends Cubit<OrdersState> {
       );
     } catch (e) {
       debugPrint('❌ OrdersCubit exception in loadOrders: $e');
+      // No emitimos error aquí para mantener la UI suave
     }
   }
 
@@ -103,6 +112,62 @@ class OrdersCubit extends Cubit<OrdersState> {
     );
   }
 
+  /// Inicia el envío periódico de ubicación cada 10 segundos para el `driverId`
+  void _startLocationTracking(String driverId) {
+    try {
+      if (_trackingDriverId == driverId && _locationTimer != null) {
+        return; // Ya está en tracking
+      }
+
+      _stopLocationTracking();
+      _trackingDriverId = driverId;
+
+      // Enviar inmediatamente
+      _sendLocation(driverId);
+
+      // Luego cada 10 segundos
+      _locationTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+        _sendLocation(driverId);
+      });
+      debugPrint('📡 Started location tracking for $driverId');
+    } catch (e) {
+      debugPrint('❌ _startLocationTracking error: $e');
+    }
+  }
+
+  /// Detiene el envío periódico de ubicación
+  void _stopLocationTracking() {
+    try {
+      _locationTimer?.cancel();
+      _locationTimer = null;
+      _trackingDriverId = null;
+      debugPrint('📡 Stopped location tracking');
+    } catch (e) {
+      debugPrint('❌ _stopLocationTracking error: $e');
+    }
+  }
+
+  Future<void> _sendLocation(String driverId) async {
+    try {
+      final position = await LocationService.getCurrentPosition();
+      final profileRepo = GetIt.I.get<ProfileRepository>();
+      final result = await profileRepo.updateDriverLocation(
+        driverId,
+        position.latitude,
+        position.longitude,
+        DateTime.now().toUtc(),
+      );
+
+      result.fold((l) {
+        debugPrint('❌ Failed to update driver location: $l');
+      }, (driver) {
+        debugPrint('✅ Location updated for driver ${driver.id}');
+      });
+    } catch (e) {
+      debugPrint('⚠️ _sendLocation error: $e');
+    }
+  }
+
   /// Acepta un pedido
   Future<void> acceptOrder(String orderId, String driverId) async {
     try {
@@ -119,6 +184,20 @@ class OrdersCubit extends Cubit<OrdersState> {
 
           // Mostrar el pedido aceptado inmediatamente
           emit(OrderDetailLoaded(mergedOrder));
+          // En modo prueba, enviar sólo una ubicación inmediatamente al aceptar
+          try {
+            if (_testingSingleSend) {
+              _sendLocation(driverId).then((_) {
+                debugPrint('📡 Sent single test location on accept for $driverId');
+              }).catchError((e) {
+                debugPrint('⚠️ _sendLocation error during accept: $e');
+              });
+            } else {
+              _startLocationTracking(driverId);
+            }
+          } catch (e) {
+            debugPrint('⚠️ Failed to start/perform location send: $e');
+          }
           // Dar tiempo a la UI de procesar el estado
           Future.delayed(const Duration(milliseconds: 300), () {
             // Luego recargar la lista completa en background sin bloquear UI
@@ -184,6 +263,12 @@ class OrdersCubit extends Cubit<OrdersState> {
 
           // Mostrar el pedido entregado inmediatamente
           emit(OrderDetailLoaded(mergedOrder));
+          // Al marcar entregado, detener el envío periódico de ubicación
+          try {
+            _stopLocationTracking();
+          } catch (e) {
+            debugPrint('⚠️ Failed to stop location tracking: $e');
+          }
           // Dar tiempo a la UI de procesar el estado
           Future.delayed(const Duration(milliseconds: 300), () {
             // Luego recargar la lista completa en background sin bloquear UI

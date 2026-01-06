@@ -1,8 +1,12 @@
 import { Bike, Loader2, MapPin } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useActiveDeliveries } from "@/core/hooks/useDelivery";
+import { useActiveDeliveries, useActiveDriverLocations } from "@/core/hooks/useDelivery";
 import { DeliveryPerson } from "@/core/models";
+import type { ActiveDelivery, DriverLocation } from "@/core/services/delivery.service";
 
 interface DeliveryMapProps {
   onSelectDeliveryPerson: (person: DeliveryPerson) => void;
@@ -10,6 +14,7 @@ interface DeliveryMapProps {
 
 export function DeliveryMap({ onSelectDeliveryPerson }: DeliveryMapProps) {
   const { data: activeDeliveries, isLoading } = useActiveDeliveries();
+  const { data: activeDriverLocations, isLoading: isLoadingDrivers } = useActiveDriverLocations();
 
   if (isLoading) {
     return (
@@ -26,24 +31,22 @@ export function DeliveryMap({ onSelectDeliveryPerson }: DeliveryMapProps) {
     );
   }
 
-  const deliveries = activeDeliveries || [];
+  const deliveries: ActiveDelivery[] = (activeDeliveries || []) as ActiveDelivery[];
+  const driverLocations: DriverLocation[] = (activeDriverLocations || []) as DriverLocation[];
 
-  // Agrupar entregas por repartidor (driver_id)
-  const driverMap = new Map<string, typeof deliveries>();
-  deliveries.forEach((delivery) => {
-    const existing = driverMap.get(delivery.driverId) || [];
-    driverMap.set(delivery.driverId, [...existing, delivery]);
-  });
+  // Choose center: first available coordinate from deliveries or drivers (with type guards)
+  const firstDeliveryWithCoords = deliveries.find(
+    (d) => typeof d.currentLatitude === 'number' && typeof d.currentLongitude === 'number',
+  );
+  const firstDriverWithCoords = driverLocations.find(
+    (d) => typeof d.lat === 'number' && typeof d.lng === 'number',
+  );
 
-  // Convertir a array de repartidores únicos con sus entregas
-  const uniqueDrivers = Array.from(driverMap.entries()).map(([driverId, driverDeliveries]) => ({
-    driverId,
-    driverName: driverDeliveries[0].driverName,
-    driverVehicleType: driverDeliveries[0].driverVehicleType,
-    driverPhone: driverDeliveries[0].driverPhone,
-    deliveries: driverDeliveries,
-    deliveryCount: driverDeliveries.length,
-  }));
+  const center: [number, number] = firstDeliveryWithCoords
+    ? [Number(firstDeliveryWithCoords.currentLatitude), Number(firstDeliveryWithCoords.currentLongitude)]
+    : firstDriverWithCoords
+    ? [Number(firstDriverWithCoords.lat), Number(firstDriverWithCoords.lng)]
+    : [19.432608, -99.133209];
 
   return (
     <Card className="col-span-3">
@@ -51,68 +54,93 @@ export function DeliveryMap({ onSelectDeliveryPerson }: DeliveryMapProps) {
         <CardTitle>Mapa de Repartidores Activos</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="relative h-[400px] w-full rounded-md bg-muted">
-          <img
-            src="/maps.png"
-            alt="Mapa de la ciudad"
-            className="h-full w-full object-cover"
-          />
-
-          {uniqueDrivers.length === 0 ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-              <p className="text-lg font-medium text-white">
-                No hay repartidores activos en este momento
-              </p>
+        <div className="h-[400px] w-full rounded-md bg-muted">
+          {deliveries.length === 0 && driverLocations.length === 0 ? (
+            <div className="flex h-full items-center justify-center">
+              <p className="text-lg font-medium text-muted-foreground">No hay repartidores activos en este momento</p>
             </div>
           ) : (
-            uniqueDrivers.map((driver, index) => {
-              // Distribute icons across the map based on index
-              const positions = [
-                { top: "15%", left: "25%" },
-                { top: "45%", left: "60%" },
-                { top: "70%", left: "35%" },
-                { top: "30%", left: "75%" },
-                { top: "60%", left: "20%" },
-              ];
-              const pos = positions[index % positions.length];
+            <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%' }}>
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
 
-              return (
-                <div
-                  key={driver.driverId}
-                  className="absolute cursor-pointer transition-transform hover:scale-125"
-                  style={{ top: pos.top, left: pos.left }}
-                  onClick={() =>
-                    onSelectDeliveryPerson({
-                      id: driver.driverId,
-                      name: driver.driverName,
-                      vehicle: driver.driverVehicleType,
-                      orderId: driver.deliveries[0].orderId,
-                      address: driver.deliveries[0].addressLabel,
-                      phone: driver.driverPhone,
-                      deliveryCount: driver.deliveryCount,
-                      deliveries: driver.deliveries,
-                    })
-                  }
-                  title={`${driver.driverName} - ${driver.deliveryCount} entrega${driver.deliveryCount > 1 ? 's' : ''}`}
-                >
-                  <div className="relative">
-                    <Bike className="h-6 w-6 text-primary" />
-                    <MapPin className="absolute -bottom-1 -right-1 h-3 w-3 text-destructive" />
-                    {driver.deliveryCount > 1 && (
-                      <div className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                        {driver.deliveryCount}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })
+              {(() => {
+                const icon = L.icon({
+                  iconUrl: new URL('leaflet/dist/images/marker-icon.png', import.meta.url).href,
+                  iconRetinaUrl: new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href,
+                  shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href,
+                  iconAnchor: [12, 41],
+                });
+
+                // Custom driver icon from public/icons
+                const driverIcon = L.icon({
+                  iconUrl: '/icons/driver-pin.svg',
+                  iconSize: [36, 36],
+                  iconAnchor: [18, 36],
+                  popupAnchor: [0, -36],
+                });
+
+                const deliveryMarkers = deliveries.map((delivery: ActiveDelivery) => {
+                  const lat = Number(delivery.currentLatitude);
+                  const lng = Number(delivery.currentLongitude);
+                  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+
+                  return (
+                    <Marker
+                      key={`delivery-${delivery.orderId}`}
+                      position={[lat, lng]}
+                      icon={icon}
+                      eventHandlers={{
+                        click: () =>
+                          onSelectDeliveryPerson({
+                            id: delivery.driverId,
+                            name: delivery.driverName,
+                            vehicle: delivery.driverVehicleType,
+                            orderId: delivery.orderId,
+                            address: delivery.deliveryAddress,
+                          }),
+                      }}
+                    >
+                      <Popup>
+                        <div className="text-sm">
+                          <div className="font-medium">{delivery.driverName}</div>
+                          <div>{delivery.deliveryAddress}</div>
+                          <div className="text-xs text-muted-foreground">{delivery.customerName}</div>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  );
+                });
+
+                const driverMarkers = driverLocations.map((drv: DriverLocation) => {
+                  const lat = Number(drv.lat);
+                  const lng = Number(drv.lng);
+                  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+
+                  return (
+                    <Marker key={`driver-${drv.id}`} position={[lat, lng]} icon={driverIcon}>
+                      <Popup>
+                        <div className="text-sm">
+                          <div className="font-medium">Repartidor: {drv.id}</div>
+                          <div>Vehículo: {drv.vehicle ?? 'N/A'}</div>
+                          <div>Estado: {drv.busy ? 'En entrega' : 'Disponible'}</div>
+                          <div className="text-xs text-muted-foreground">Última: {drv.last_upd ?? ''}</div>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  );
+                });
+
+                return [...deliveryMarkers, ...driverMarkers];
+              })()}
+            </MapContainer>
           )}
         </div>
-
-        {uniqueDrivers.length > 0 && (
+        {deliveries.length > 0 && (
           <div className="mt-4 text-sm text-muted-foreground">
-            {uniqueDrivers.length} repartidor{uniqueDrivers.length > 1 ? "es" : ""} activo{uniqueDrivers.length > 1 ? "s" : ""} · {deliveries.length} entrega{deliveries.length > 1 ? "s" : ""} en curso
+            {deliveries.length} entrega{deliveries.length > 1 ? 's' : ''} en curso
           </div>
         )}
       </CardContent>

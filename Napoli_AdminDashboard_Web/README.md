@@ -113,3 +113,30 @@ For this project, the pizza-api backend was used as a base:
 Once the server is running, open your preferred web browser and navigate to:
 
 - [http://localhost:5173](http://localhost:5173)
+
+## 2.3 Map (Leaflet) setup
+
+The admin dashboard uses Leaflet + React-Leaflet to render driver maps. If you need to enable the map locally, install the packages and types and run the dev server:
+
+1. Install runtime packages:
+
+```bash
+pnpm add react-leaflet leaflet
+```
+
+2. Install TypeScript types (dev dependency):
+
+```bash
+pnpm add -D @types/leaflet
+```
+
+3. Start the development server:
+
+```bash
+pnpm dev
+```
+
+Notes and links:
+- React-Leaflet docs: https://react-leaflet.js.org/
+- Leaflet docs: https://leafletjs.com/
+- Compatibility: Use `react-leaflet` version compatible with your React version. If you run into errors like `render2 is not a function` check that `react-leaflet` and `react` versions are compatible (e.g., for React 18 use react-leaflet v4.x).

@@ -26,6 +26,11 @@
 	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>La aplicación necesita acceder a su ubicación para compartir coordenadas mientras realiza entregas.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>La aplicación puede enviar su ubicación periódicamente para actualizar el estado de la entrega incluso cuando la app está en segundo plano.</string>
+	<!-- Si sólo necesita ubicación en primer plano, puede omitir NSLocationAlwaysAndWhenInUseUsageDescription -->
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>

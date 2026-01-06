@@ -32,6 +32,7 @@ dependencies:
   # External Integrations
   url_launcher: ^6.2.5
   image_picker: ^1.0.7
+  geolocator: ^9.0.2
   
   # Utilities
   intl: ^0.19.0

@@ -76,6 +76,35 @@ class ProfileRemoteDataSource {
     }
   }
 
+  /// Actualiza la ubicación del conductor en la BD usando la función update_driver_location
+  Future<Driver> updateDriverLocation(
+    String driverId,
+    double latitude,
+    double longitude,
+    DateTime lastLocationUpdate,
+  ) async {
+    try {
+      print('🔍 DEBUG - Updating driver location for $driverId: $latitude, $longitude');
+
+      final response = await _client.rpc(
+        'update_driver_location',
+        params: {
+          'p_driver_id': driverId,
+          'p_current_latitude': latitude,
+          'p_current_longitude': longitude,
+          'p_last_location_update': lastLocationUpdate.toUtc().toIso8601String(),
+        },
+      );
+
+      print('✅ Driver location updated');
+
+      return _driverFromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      print('❌ Error updating driver location: $e');
+      throw Exception('Error al actualizar ubicación: $e');
+    }
+  }
+
   /// Sube foto de perfil a Supabase Storage
   Future<String> uploadProfilePhoto(String driverId, File photo) async {
     try {

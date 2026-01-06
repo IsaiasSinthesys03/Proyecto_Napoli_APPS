@@ -13,19 +13,16 @@ class OrdersRemoteDataSource {
   OrdersRemoteDataSource(this._client);
 
   /// 1. Obtener pedidos disponibles (status: ready)
-  /// Incluye pedidos sin asignar Y pedidos asignados al driver actual
-  Future<List<Order>> getAvailableOrders(
-    String restaurantId,
-    String driverId,
-  ) async {
+  Future<List<Order>> getAvailableOrders(String restaurantId) async {
     try {
       // Consulta directa a la tabla orders
-      // RLS filtra por restaurant_id automáticamente
-      // Solo filtramos por status, RLS se encarga del resto
+      // Usamos select('*') para evitar problemas con relaciones complejas
       final result = await _client
           .from('orders')
           .select('*, customers:customer_id(id, name, phone)')
-          .eq('status', 'ready')
+          .eq('restaurant_id', restaurantId)
+          .filter('driver_id', 'is', null)
+          .filter('status', 'in', ['ready', 'processing'])
           .order('created_at', ascending: false);
 
       if (result.isNotEmpty) {
@@ -35,7 +32,6 @@ class OrdersRemoteDataSource {
 
       return [];
     } catch (e) {
-      debugPrint('❌ getAvailableOrders error: $e');
       // En caso de error, retornamos lista vacía para no romper la UI
       return [];
     }

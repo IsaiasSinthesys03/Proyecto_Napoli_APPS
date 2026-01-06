@@ -109,6 +109,18 @@ export const useActiveDeliveries = () => {
   return useQuery({
     queryKey: ["active-deliveries"],
     queryFn: DeliveryService.getActiveDeliveries,
-    refetchInterval: 30000, // Refresh every 30 seconds for near real-time
+    refetchInterval: 10000, // Refresh every 10 seconds for near real-time
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+  });
+};
+
+export const useActiveDriverLocations = () => {
+  return useQuery({
+    queryKey: ["active-driver-locations"],
+    queryFn: DeliveryService.getActiveDriversLocations,
+    refetchInterval: 60000, // 60 seconds (render location every minute)
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
   });
 };

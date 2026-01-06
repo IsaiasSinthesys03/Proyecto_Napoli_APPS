@@ -57,7 +57,20 @@ export const createDeliveryMan = async (
       },
     });
 
-    if (authError) throw new Error(`Error creating auth user: ${authError.message}`);
+    if (authError) {
+      const msg = authError.message || '';
+      if ((authError as any).status === 422 || msg.includes('User already registered')) {
+        if (adminSession) {
+          await supabase.auth.setSession({
+            access_token: adminSession.access_token,
+            refresh_token: adminSession.refresh_token,
+          });
+          console.log('🔄 Admin session restored after auth conflict');
+        }
+        throw new Error('User already registered');
+      }
+      throw new Error(`Error creating auth user: ${authError.message}`);
+    }
     if (!authData.user) throw new Error("No user returned from auth");
 
     console.log('✅ Driver auth user created:', authData.user.id);
@@ -200,14 +213,14 @@ export const assignDeliveryMan = async (
 
 export interface ActiveDelivery {
   orderId: string;
-  orderNumber: string;
   driverId: string;
   driverName: string;
   driverPhone: string | null;
   driverVehicleType: string;
-  addressLabel: string;
-  fullAddress: string;
+  deliveryAddress: string;
   customerName: string;
+  currentLatitude?: number | null;
+  currentLongitude?: number | null;
 }
 
 export const getActiveDeliveries = async (): Promise<ActiveDelivery[]> => {
@@ -224,5 +237,41 @@ export const getActiveDeliveries = async (): Promise<ActiveDelivery[]> => {
 
   console.log('✅ SUCCESS - Active deliveries retrieved');
 
-  return (data || []).map((d: any) => toCamelCase<ActiveDelivery>(d));
+  return (data || []).map((d: any) => {
+    const c = toCamelCase<ActiveDelivery>(d);
+    // Ensure numeric conversion if values are strings or null
+    return {
+      ...c,
+      currentLatitude: d.current_latitude !== null ? Number(d.current_latitude) : null,
+      currentLongitude: d.current_longitude !== null ? Number(d.current_longitude) : null,
+    } as ActiveDelivery;
+  });
+};
+
+export interface DriverLocation {
+  id: string;
+  lat: number | null;
+  lng: number | null;
+  vehicle?: string | null;
+  busy?: boolean | null;
+  last_upd?: string | null;
+}
+
+export const getActiveDriversLocations = async (): Promise<DriverLocation[]> => {
+  console.log('🔍 DEBUG - Starting getActiveDriversLocations');
+
+  const { data, error } = await supabase.rpc('get_active_drivers_locations');
+
+  if (error) throw new Error(error.message);
+
+  console.log('✅ SUCCESS - Active drivers locations retrieved');
+
+  return (data || []).map((d: any) => ({
+    id: d.id,
+    lat: d.lat !== null && d.lat !== undefined ? Number(d.lat) : null,
+    lng: d.lng !== null && d.lng !== undefined ? Number(d.lng) : null,
+    vehicle: d.vehicle ?? null,
+    busy: d.busy === true || d.busy === 't' ? true : false,
+    last_upd: d.last_upd ?? null,
+  }));
 };

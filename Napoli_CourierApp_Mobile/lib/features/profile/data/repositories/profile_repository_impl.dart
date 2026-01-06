@@ -31,6 +31,26 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
+  Future<Either<String, Driver>> updateDriverLocation(
+    String driverId,
+    double latitude,
+    double longitude,
+    DateTime lastLocationUpdate,
+  ) async {
+    try {
+      final updated = await _dataSource.updateDriverLocation(
+        driverId,
+        latitude,
+        longitude,
+        lastLocationUpdate,
+      );
+      return right(updated);
+    } catch (e) {
+      return left('Error al actualizar ubicación: $e');
+    }
+  }
+
+  @override
   Future<Either<String, void>> changePassword(
     String driverId,
     String oldPassword,
