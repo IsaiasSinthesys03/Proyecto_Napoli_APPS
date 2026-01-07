@@ -248,14 +248,17 @@ export const getActiveDeliveries = async (): Promise<ActiveDelivery[]> => {
   });
 };
 
+
 export interface DriverLocation {
   id: string;
+  name: string;
   lat: number | null;
   lng: number | null;
   vehicle?: string | null;
   busy?: boolean | null;
   last_upd?: string | null;
 }
+
 
 export const getActiveDriversLocations = async (): Promise<DriverLocation[]> => {
   console.log('🔍 DEBUG - Starting getActiveDriversLocations');
@@ -268,6 +271,7 @@ export const getActiveDriversLocations = async (): Promise<DriverLocation[]> => 
 
   return (data || []).map((d: any) => ({
     id: d.id,
+    name: d.name || 'Conductor',
     lat: d.lat !== null && d.lat !== undefined ? Number(d.lat) : null,
     lng: d.lng !== null && d.lng !== undefined ? Number(d.lng) : null,
     vehicle: d.vehicle ?? null,

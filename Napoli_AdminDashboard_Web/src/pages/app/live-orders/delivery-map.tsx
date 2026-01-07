@@ -1,4 +1,4 @@
-import { Bike, Loader2, MapPin } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -14,7 +14,7 @@ interface DeliveryMapProps {
 
 export function DeliveryMap({ onSelectDeliveryPerson }: DeliveryMapProps) {
   const { data: activeDeliveries, isLoading } = useActiveDeliveries();
-  const { data: activeDriverLocations, isLoading: isLoadingDrivers } = useActiveDriverLocations();
+  const { data: activeDriverLocations } = useActiveDriverLocations();
 
   if (isLoading) {
     return (
@@ -36,17 +36,38 @@ export function DeliveryMap({ onSelectDeliveryPerson }: DeliveryMapProps) {
 
   // Choose center: first available coordinate from deliveries or drivers (with type guards)
   const firstDeliveryWithCoords = deliveries.find(
-    (d) => typeof d.currentLatitude === 'number' && typeof d.currentLongitude === 'number',
+    (d) => {
+      const lat = Number(d.currentLatitude);
+      const lng = Number(d.currentLongitude);
+      return Number.isFinite(lat) && Number.isFinite(lng);
+    }
   );
   const firstDriverWithCoords = driverLocations.find(
-    (d) => typeof d.lat === 'number' && typeof d.lng === 'number',
+    (d) => {
+      const lat = Number(d.lat);
+      const lng = Number(d.lng);
+      return Number.isFinite(lat) && Number.isFinite(lng);
+    }
   );
 
-  const center: [number, number] = firstDeliveryWithCoords
-    ? [Number(firstDeliveryWithCoords.currentLatitude), Number(firstDeliveryWithCoords.currentLongitude)]
-    : firstDriverWithCoords
-    ? [Number(firstDriverWithCoords.lat), Number(firstDriverWithCoords.lng)]
-    : [19.432608, -99.133209];
+  // Default center (Mexico City coordinates)
+  const defaultCenter: [number, number] = [19.432608, -99.133209];
+
+  let center: [number, number] = defaultCenter;
+
+  if (firstDeliveryWithCoords) {
+    const lat = Number(firstDeliveryWithCoords.currentLatitude);
+    const lng = Number(firstDeliveryWithCoords.currentLongitude);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      center = [lat, lng];
+    }
+  } else if (firstDriverWithCoords) {
+    const lat = Number(firstDriverWithCoords.lat);
+    const lng = Number(firstDriverWithCoords.lng);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      center = [lat, lng];
+    }
+  }
 
   return (
     <Card className="col-span-3">
@@ -123,7 +144,7 @@ export function DeliveryMap({ onSelectDeliveryPerson }: DeliveryMapProps) {
                     <Marker key={`driver-${drv.id}`} position={[lat, lng]} icon={driverIcon}>
                       <Popup>
                         <div className="text-sm">
-                          <div className="font-medium">Repartidor: {drv.id}</div>
+                          <div className="font-medium">{drv.name}</div>
                           <div>Vehículo: {drv.vehicle ?? 'N/A'}</div>
                           <div>Estado: {drv.busy ? 'En entrega' : 'Disponible'}</div>
                           <div className="text-xs text-muted-foreground">Última: {drv.last_upd ?? ''}</div>
