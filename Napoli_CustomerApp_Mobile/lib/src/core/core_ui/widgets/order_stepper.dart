@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// theme not required here; this widget uses Theme.of(context)
 
 class OrderStepper extends StatelessWidget {
   final int currentStep;
@@ -9,122 +8,209 @@ class OrderStepper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final activeColor = theme.colorScheme.primary;
+    final inactiveColor = theme.disabledColor.withOpacity(0.3);
+
+    // Definimos los pasos con sus datos (Iconos temáticos de pizza)
+    final steps = [
+      _TrackerStep(
+        title: 'Confirmado',
+        subtitle: 'Tu orden ha sido recibida',
+        icon: Icons.receipt_long_rounded,
+      ),
+      _TrackerStep(
+        title: 'Preparando',
+        subtitle: 'En el horno de leña',
+        icon: Icons.local_fire_department_rounded,
+      ),
+      _TrackerStep(
+        title: 'En camino',
+        subtitle: 'El repartidor va hacia ti',
+        icon: Icons.delivery_dining_rounded,
+      ),
+      _TrackerStep(
+        title: 'Entregado',
+        subtitle: '¡A disfrutar!',
+        icon: Icons.local_pizza_rounded,
+      ),
+    ];
+
     return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStep(
-            context: context,
-            theme: theme,
-            stepNumber: 0,
-            title: 'Pedido Confirmado',
-            subtitle: 'Hemos recibido tu pedido',
-            icon: Icons.check_circle,
-          ),
-          _buildConnector(context, 0),
-          _buildStep(
-            context: context,
-            theme: theme,
-            stepNumber: 1,
-            title: 'En Preparación',
-            subtitle: 'Tu comida se está preparando con amor',
-            icon: Icons.restaurant_menu,
-          ),
-          _buildConnector(context, 1),
-          _buildStep(
-            context: context,
-            theme: theme,
-            stepNumber: 2,
-            title: 'Repartidor en Camino',
-            subtitle: '¡Tu pedido ya va hacia ti!',
-            icon: Icons.delivery_dining,
-          ),
-          _buildConnector(context, 2),
-          _buildStep(
-            context: context,
-            theme: theme,
-            stepNumber: 3,
-            title: 'Entregado',
-            subtitle: '¡Disfruta tu comida!',
-            icon: Icons.home,
-          ),
+          for (int i = 0; i < steps.length; i++) ...[
+            // Columna del Paso (Icono + Texto)
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icono
+                SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: Center(
+                    child: _PulsingTrackerIcon(
+                      icon: steps[i].icon,
+                      isActive: i == currentStep,
+                      isCompleted: i < currentStep,
+                      activeColor: activeColor,
+                      inactiveColor: inactiveColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // Texto (con más ancho para evitar cortes)
+                SizedBox(
+                  width: 70,
+                  child: Text(
+                    steps[i].title,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 10,
+                      fontWeight: i == currentStep
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      color: i <= currentStep
+                          ? theme.colorScheme.onSurface
+                          : theme.disabledColor,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            // Línea conectora (si no es el último)
+            if (i < steps.length - 1)
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.only(
+                    top: 24,
+                  ), // Alineado al centro del icono (50/2 - altura_linea/2)
+                  height: 2,
+                  color: i < currentStep ? activeColor : inactiveColor,
+                ),
+              ),
+          ],
         ],
       ),
     );
   }
+}
 
-  Widget _buildStep({
-    required BuildContext context,
-    required ThemeData theme,
-    required int stepNumber,
-    required String title,
-    required String subtitle,
-    required IconData icon,
-  }) {
-    final isCompleted = stepNumber <= currentStep;
-    final isCurrent = stepNumber == currentStep;
+class _TrackerStep {
+  final String title;
+  final String subtitle;
+  final IconData icon;
 
-    return Row(
+  _TrackerStep({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
+}
+
+class _PulsingTrackerIcon extends StatefulWidget {
+  final IconData icon;
+  final bool isActive;
+  final bool isCompleted;
+  final Color activeColor;
+  final Color inactiveColor;
+
+  const _PulsingTrackerIcon({
+    required this.icon,
+    required this.isActive,
+    required this.isCompleted,
+    required this.activeColor,
+    required this.inactiveColor,
+  });
+
+  @override
+  State<_PulsingTrackerIcon> createState() => _PulsingTrackerIconState();
+}
+
+class _PulsingTrackerIconState extends State<_PulsingTrackerIcon>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.4,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _fadeAnimation = Tween<double>(
+      begin: 0.6,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = (widget.isActive || widget.isCompleted)
+        ? widget.activeColor
+        : widget.inactiveColor;
+
+    return Stack(
+      alignment: Alignment.center,
       children: [
-        Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: isCompleted ? theme.colorScheme.primary : theme.disabledColor,
-            shape: BoxShape.circle,
-            boxShadow: isCurrent
-                ? [
-                    BoxShadow(
-                      color: theme.colorScheme.primary.withAlpha((0.4 * 255).round()),
-                      blurRadius: 12,
-                      spreadRadius: 2,
+        if (widget.isActive)
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _fadeAnimation.value,
+                child: Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: color.withOpacity(0.4),
                     ),
-                  ]
-                : [],
+                  ),
+                ),
+              );
+            },
+          ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOutBack,
+          width: widget.isActive ? 48 : 40,
+          height: widget.isActive ? 48 : 40,
+          decoration: BoxDecoration(
+            color: widget.isActive
+                ? color.withOpacity(0.1)
+                : Colors.transparent,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: color,
+              width: widget.isActive ? 2.5 : 2.0,
+            ),
           ),
           child: Icon(
-            icon,
-            color: isCompleted ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withAlpha((0.6 * 255).round()),
-            size: 26,
-          ),
-        ),
-        const SizedBox(width: 20),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: isCurrent ? FontWeight.bold : FontWeight.w600,
-          color: isCompleted
-            ? theme.colorScheme.primary
-            : theme.colorScheme.onSurface.withAlpha((0.7 * 255).round()),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withAlpha((0.6 * 255).round()),
-                ),
-              ),
-            ],
+            widget.isCompleted ? Icons.check : widget.icon,
+            color: color,
+            size: widget.isActive ? 24 : 20,
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildConnector(BuildContext context, int stepNumber) {
-    final isCompleted = stepNumber < currentStep;
-    final theme = Theme.of(context);
-
-    return Container(
-      margin: const EdgeInsets.only(left: 24, top: 8, bottom: 8),
-      width: 3,
-      height: 30,
-      color: isCompleted ? theme.colorScheme.primary : theme.disabledColor,
     );
   }
 }

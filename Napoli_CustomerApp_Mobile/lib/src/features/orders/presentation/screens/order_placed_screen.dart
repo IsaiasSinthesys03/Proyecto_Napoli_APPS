@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:napoli_app_v1/src/core/core_ui/theme.dart';
 import 'package:napoli_app_v1/src/core/core_ui/widgets/order_stepper.dart';
 import 'package:napoli_app_v1/src/features/cart/presentation/cubit/cart_cubit.dart';
@@ -237,27 +238,40 @@ class _OrderPlacedScreenState extends State<OrderPlacedScreen> {
             if (_currentStep == 2) ...[
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 24),
-                height: 200,
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: theme.dividerColor),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.shadowColor.withAlpha((0.1 * 255).round()),
+                      blurRadius: 8,
+                    ),
+                  ],
                 ),
-                child: Stack(
+                child: Row(
                   children: [
-                    Center(
+                    CircleAvatar(
+                      backgroundColor: theme.colorScheme.primary,
+                      child: Icon(
+                        Icons.person,
+                        color: theme.colorScheme.onPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.map,
-                            size: 60,
-                            color: theme.colorScheme.primary,
-                          ),
-                          const SizedBox(height: 12),
                           Text(
-                            l10n.realTimeMap,
-                            style: theme.textTheme.titleMedium?.copyWith(
+                            'Carlos Rodríguez',
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            l10n.yourDeliveryMan,
+                            style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface.withAlpha(
                                 (0.6 * 255).round(),
                               ),
@@ -266,62 +280,10 @@ class _OrderPlacedScreenState extends State<OrderPlacedScreen> {
                         ],
                       ),
                     ),
-                    Positioned(
-                      bottom: 16,
-                      left: 16,
-                      right: 16,
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: theme.shadowColor.withAlpha(
-                                (0.1 * 255).round(),
-                              ),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: theme.colorScheme.primary,
-                              child: Icon(
-                                Icons.person,
-                                color: theme.colorScheme.onPrimary,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Carlos Rodríguez',
-                                    style: theme.textTheme.bodyLarge?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    l10n.yourDeliveryMan,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.colorScheme.onSurface
-                                          .withAlpha((0.6 * 255).round()),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.phone),
-                              color: theme.colorScheme.primary,
-                              onPressed: () {},
-                            ),
-                          ],
-                        ),
-                      ),
+                    IconButton(
+                      icon: const Icon(Icons.phone),
+                      color: theme.colorScheme.primary,
+                      onPressed: () {},
                     ),
                   ],
                 ),
@@ -347,9 +309,109 @@ class _OrderPlacedScreenState extends State<OrderPlacedScreen> {
                 textAlign: TextAlign.center,
               ),
             ),
+            const SizedBox(height: 30),
+            _buildETACard(theme, l10n),
+            const SizedBox(height: 30),
+            _buildStepAnimation(),
+            const SizedBox(height: 30),
+            _buildHelpButton(theme),
+            const SizedBox(height: 40),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildETACard(ThemeData theme, AppLocalizations l10n) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.green.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.green.withOpacity(0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: theme.shadowColor.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.timer_outlined,
+              color: theme.colorScheme.primary,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.estimatedTime, // "Tiempo estimado: 25-35 min"
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '14:30 PM - 14:45 PM', // Hora simulada
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepAnimation() {
+    String assetName;
+    switch (_currentStep) {
+      case 0:
+        assetName = 'ConfirmingOrder.json';
+        break;
+      case 1:
+        assetName = 'chef-making-pizza.json';
+        break;
+      case 2:
+        assetName = 'PizzaDelivery.json';
+        break;
+      case 3:
+      default:
+        assetName = 'PizzaLoading.json';
+        break;
+    }
+
+    return SizedBox(
+      height: 250,
+      child: Lottie.asset('assets/animation/$assetName', fit: BoxFit.contain),
+    );
+  }
+
+  Widget _buildHelpButton(ThemeData theme) {
+    return TextButton.icon(
+      onPressed: () {
+        // Acción de ayuda
+      },
+      style: TextButton.styleFrom(
+        foregroundColor: theme.disabledColor,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+      ),
+      icon: const Icon(Icons.support_agent, size: 20),
+      label: const Text('¿Necesitas ayuda con tu pedido?'),
     );
   }
 }

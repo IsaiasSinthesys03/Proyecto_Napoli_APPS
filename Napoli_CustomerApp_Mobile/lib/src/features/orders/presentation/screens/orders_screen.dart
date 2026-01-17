@@ -5,6 +5,7 @@ import 'package:napoli_app_v1/src/core/services/restaurant_config_service.dart';
 import 'package:napoli_app_v1/src/di.dart';
 import 'package:napoli_app_v1/src/features/orders/domain/entities/order.dart';
 import 'package:go_router/go_router.dart';
+import 'package:napoli_app_v1/src/features/orders/presentation/screens/order_status_screen.dart';
 import '../cubit/orders_cubit.dart';
 import '../cubit/orders_state.dart';
 
@@ -122,6 +123,24 @@ class _OrdersScreenContent extends StatelessWidget {
                             ),
                           ],
                         ),
+                        if (order.status != OrderStatus.cancelled)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12.0),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          OrderStatusScreen(order: order),
+                                    ),
+                                  );
+                                },
+                                child: Text(l10n.trackOrder),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),

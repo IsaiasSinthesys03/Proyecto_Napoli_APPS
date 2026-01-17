@@ -19,7 +19,7 @@ class OrdersRemoteDataSource {
       // Usamos select('*') para evitar problemas con relaciones complejas
       final result = await _client
           .from('orders')
-          .select('*, customers:customer_id(id, name, phone)')
+          .select('*, customers:customer_id(*), items:order_items(*)')
           .eq('restaurant_id', restaurantId)
           .filter('driver_id', 'is', null)
           .filter('status', 'in', ['ready', 'processing'])
@@ -52,7 +52,7 @@ class OrdersRemoteDataSource {
         final response = await _client
             .from('orders')
             .select(
-              '*, customers:customer_id(*)',
+              '*, customers:customer_id(*), items:order_items(*)',
             ) // Traer TODO del cliente para evitar errores de nombres de columna
             .eq('driver_id', driverId)
             .filter('status', 'in', ['accepted', 'delivering']);
@@ -159,18 +159,19 @@ class OrdersRemoteDataSource {
 
             var order = _orderFromJson(json);
 
-            // FIX: Si el teléfono sigue vacío (falló query directa y RPC de lista es incompleto),
-            // intentamos obtener el detalle completo usando el RPC 'get_order_details'.
-            if (order.customerPhone.isEmpty) {
+            // FIX: Si faltan datos críticos (teléfono o ITEMS), forzamos la carga de detalles completos.
+            // Esto corrige el problema donde la lista de activos se ve vacía o incompleta.
+            if (order.customerPhone.isEmpty || order.items.isEmpty) {
               try {
                 debugPrint(
-                  '🔍 Phone empty for order ${order.id}. Fetching full details via RPC...',
+                  '🔍 Incomplete data for order ${order.id} (Phone: ${order.customerPhone}, Items: ${order.items.length}). Fetching full details via RPC...',
                 );
                 final fullOrder = await getOrderDetails(order.id);
-                if (fullOrder.customerPhone.isNotEmpty) {
+                if (fullOrder.customerPhone.isNotEmpty ||
+                    fullOrder.items.isNotEmpty) {
                   order = fullOrder;
                   debugPrint(
-                    '✅ Phone recovered via getOrderDetails: ${order.customerPhone}',
+                    '✅ Full details recovered via getOrderDetails: ${order.customerPhone}, ${order.items.length} items',
                   );
                 }
               } catch (e) {
@@ -208,11 +209,12 @@ class OrdersRemoteDataSource {
   /// 2. Aceptar pedido
   Future<Order> acceptOrder(String orderId, String driverId) async {
     try {
-      final result = await _client.rpc(
+      await _client.rpc(
         'accept_order',
         params: {'p_order_id': orderId, 'p_driver_id': driverId},
       );
-      return _orderFromJson(result as Map<String, dynamic>);
+      // Usamos getOrderDetails para asegurar que retornamos TODA la info (items, cliente, teléfono)
+      return await getOrderDetails(orderId);
     } on PostgrestException catch (e) {
       print('❌ Database error: ${e.message}');
       if (e.message.contains('invalid input syntax for type uuid')) {
@@ -232,11 +234,12 @@ class OrdersRemoteDataSource {
   /// 2.5 Confirmar recogida del pedido (pickup)
   Future<Order> pickupOrder(String orderId, String driverId) async {
     try {
-      final result = await _client.rpc(
+      await _client.rpc(
         'pickup_order',
         params: {'p_order_id': orderId, 'p_driver_id': driverId},
       );
-      return _orderFromJson(result as Map<String, dynamic>);
+      // Usamos getOrderDetails para asegurar que retornamos TODA la info actualizada
+      return await getOrderDetails(orderId);
     } on PostgrestException catch (e) {
       print('❌ Database error: ${e.message}');
       if (e.message.contains('invalid input syntax for type uuid')) {
