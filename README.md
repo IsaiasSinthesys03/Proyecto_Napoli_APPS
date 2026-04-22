@@ -8,8 +8,23 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 <div align="center">
-  <!-- Reemplaza el src con tu gif o screenshot real -->
-  <img src="https://via.placeholder.com/800x400.png?text=Capturas+de+pantalla+o+GIFs+de+Napoli+aqui" alt="Demostración visual de Napoli" />
+  <img src="capturas_pantalla/Logo_napoli.jpeg" alt="Logo Napoli" width="250" />
+</div>
+
+<div align="center">
+  <h3>🖥️ Dashboard Web</h3>
+  <img src="capturas_pantalla/img_web1.jpeg" width="800" />
+  <br/>
+  <img src="capturas_pantalla/img_web2.jpeg" width="395" />
+  <img src="capturas_pantalla/img_web3.jpeg" width="395" />
+</div>
+
+<div align="center">
+  <h3>📱 Apps Móviles (Cliente y Repartidor)</h3>
+  <img src="capturas_pantalla/img_app1.jpeg" width="190" />
+  <img src="capturas_pantalla/img_app2.jpeg" width="190" />
+  <img src="capturas_pantalla/img_driver1.jpeg" width="190" />
+  <img src="capturas_pantalla/img_driver2.jpeg" width="190" />
 </div>
 
 ## 📋 Tabla de Contenidos
