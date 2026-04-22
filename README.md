@@ -79,6 +79,16 @@ El músculo técnico de Napoli es su integración perfecta de 3 aplicaciones só
 
 ---
 
+## 🤖 Desarrollo Impulsado por Inteligencia Artificial (+IA)
+
+Este no es un proyecto de software tradicional. **Napoli** fue orquestado y fundamentado utilizando metodologías de vanguardia en **Agentic AI Workflow** y **Prompt Engineering**. 
+
+A través de la co-creación con avanzados modelos de Inteligencia Artificial actuando como arquitectos de co-piloto, logramos catalizar drásticamente la eficiencia del ciclo de desarrollo. Desde la estructuración de la base de datos SQL, la inferencia de políticas de seguridad multi-tenant (RLS), hasta el hilado fino de las estrictas capas de la _Clean Architecture_ en Flutter y React; la IA funcionó como una extensión de las capacidades humanas de nuestros desarrolladores. 
+
+Redefinimos los tiempos de entrega delegando el código repetitivo a la inteligencia matemática, permitiendo al equipo humano concentrar todo su nivel cognitivo en diseñar **la mejor experiencia de negocio posible**. Bienvenidos al futuro del desarrollo de software.
+
+---
+
 ## 4. Prerrequisitos e Instalación
 
 ### Prerrequisitos
