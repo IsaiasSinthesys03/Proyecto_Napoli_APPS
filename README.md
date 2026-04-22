@@ -1,406 +1,177 @@
 # 🍕 Napoli - Sistema Multi-Tenant de Gestión de Pizzerías
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.0+-02569B?logo=flutter)](https://flutter.dev)
-[![Next.js](https://img.shields.io/badge/Next.js-14+-000000?logo=next.js)](https://nextjs.org)
+[![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-5+-646CFF?logo=vite)](https://vitejs.dev)
 [![Supabase](https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase)](https://supabase.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql)](https://postgresql.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **Sistema SaaS completo para gestión de pizzerías con 3 aplicaciones integradas**: Dashboard Web para administración, App móvil para clientes y App móvil para repartidores.
-
----
+<div align="center">
+  <!-- Reemplaza el src con tu gif o screenshot real -->
+  <img src="https://via.placeholder.com/800x400.png?text=Capturas+de+pantalla+o+GIFs+de+Napoli+aqui" alt="Demostración visual de Napoli" />
+</div>
 
 ## 📋 Tabla de Contenidos
 
-- [Descripción General](#-descripción-general)
-- [Arquitectura](#-arquitectura)
-- [Proyectos](#-proyectos)
-- [Tecnologías](#-tecnologías)
-- [Características Principales](#-características-principales)
-- [Instalación](#-instalación)
-- [Configuración](#-configuración)
-- [Documentación](#-documentación)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Contribuir](#-contribuir)
-- [Licencia](#-licencia)
+1. [Descripción Breve](#1-descripción-breve)
+2. [Características Principales](#2-características-principales)
+3. [Arquitectura y Stack Tecnológico](#3-arquitectura-y-stack-tecnológico)
+4. [Prerrequisitos e Instalación](#4-prerrequisitos-e-instalación)
+5. [Estructura de Carpetas](#5-estructura-de-carpetas)
+6. [El Equipo](#6-el-equipo)
+7. [Documentación y Licencia](#7-documentación-y-licencia)
 
 ---
 
-## 🎯 Descripción General
+## 1. Descripción Breve
 
-**Napoli** es una plataforma SaaS multi-tenant diseñada para gestionar pizzerías de manera integral. El sistema permite a múltiples restaurantes operar de forma independiente en la misma infraestructura, con aislamiento completo de datos mediante `restaurant_id`.
+**Napoli** es una plataforma SaaS (Software as a Service) multi-tenant diseñada para gestionar pizzerías de manera integral. El sistema resuelve el problema logístico de múltiples restaurantes, permitiéndoles operar de forma completamente independiente y segura en la misma infraestructura tecnológica (con un aislamiento de datos riguroso mediado por el `restaurant_id`).
 
-### ¿Qué hace Napoli?
-
-- 🏪 **Gestión de Restaurantes**: Administra menú, productos, categorías, promociones y cupones
-- 📱 **Pedidos en Tiempo Real**: Sistema de pedidos con actualización en tiempo real usando Supabase Realtime
-- 🛵 **Gestión de Repartidores**: Asignación automática, seguimiento GPS y cálculo de ganancias
-- 💳 **Múltiples Métodos de Pago**: Efectivo, tarjeta, transferencia
-- 📊 **Reportes y Analíticas**: Dashboard con métricas de ventas, productos más vendidos y reportes diarios
-- 🌍 **Multi-tenant**: Soporte para múltiples restaurantes en la misma plataforma
+El ecosistema abarca la gestión de administradores (menú y análisis de datos), la experiencia del cliente para realización de pedidos, y la logística de entrega con una aplicación para repartidores; manteniendo todas las partes sincronizadas en tiempo real.
 
 ---
 
-## 🏗️ Arquitectura
+## 2. Características Principales
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    NAPOLI SaaS PLATFORM                         │
-├─────────────────────────────────────────────────────────────────┤
-│  Tenant 1 (Pizzería A)  │  Tenant 2 (Pizzería B)  │  ...       │
-│  ├─ Customers           │  ├─ Customers           │            │
-│  ├─ Drivers             │  ├─ Drivers             │            │
-│  ├─ Orders              │  ├─ Orders              │            │
-│  ├─ Products            │  ├─ Products            │            │
-│  └─ Settings            │  └─ Settings            │            │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Principios de Arquitectura
-
-- **Clean Architecture**: Separación en capas (Domain, Data, Presentation)
-- **Stored Procedures**: Toda la lógica de negocio en PostgreSQL
-- **Multi-tenant**: Aislamiento de datos por `restaurant_id`
-- **Realtime**: Sincronización en tiempo real con Supabase
-- **Offline-first**: Apps móviles funcionan sin conexión
+- **Gestión Multi-tenant de Restaurantes**: Aislamiento total de datos. Permite administrar el menú, productos, categorías, promociones y cupones por cada pizzería de forma independiente.
+- **Pedidos y Seguimiento en Tiempo Real**: Sincronización instantánea de los estados del pedido y seguimiento GPS en vivo de la entrega empleando WebSockets (Supabase Realtime).
+- **Gestión Avanzada de Repartidores**: Asignación automática o manual, cálculo automatizado de ganancias, historial de métricas y sistema de calificaciones.
+- **Sistema de Pagos Robusto**: Soporte de métodos de pago (Efectivo, tarjeta, transferencia) con cálculo automático y exacto (precio en centavos para evadir el error de punto flotante de variables) en subtotal, impuestos, delivery y propinas.
+- **Reportes y Analíticas Offline-First**: Las aplicaciones móviles están diseñadas para preservar funcionalidades en condiciones de baja conectividad. Los administradores por su parte incluyen un dashboard con analíticas avanzadas.
+- **Autenticación y Seguridad RLS**: Manejada velozmente por Supabase Auth, respaldando información delicada con Row Level Security (RLS) implementado a nivel de Postgres.
 
 ---
 
-## 📱 Proyectos
+## 3. Arquitectura y Stack Tecnológico
 
-### 1. 🖥️ Napoli_AdminDashboard_Web
+El músculo técnico de Napoli es su integración perfecta de 3 aplicaciones sólidas comunicándose con un servidor unificado. Hemos implementado expresamente metodologías como **Clean Architecture**, estricta modularización, y **Principios SOLID**, garantizando abstracciones seguras frente a un código espagueti.
 
-**Dashboard web para administradores de pizzerías**
+### Frontend (Dashboard Administrativo)
+- **Framework & Lenguaje**: Vite + React 18, TypeScript, React Router DOM. *(Nota: Inicialmente referenciado como Next.js 14).*
+- **Estilos & Componentes UI**: Tailwind CSS junto a shadcn/ui (Radix UI) para componentes veloces y accesibles.
+- **Estado Dinámico**: React Query para manejar ciclos asíncronos y Fetching. Leaflet y Recharts para modelado de mapas e inferencia de gráficos analíticos.
 
-- **Tecnología**: Next.js 14, TypeScript, Tailwind CSS, shadcn/ui
-- **Funcionalidades**:
-  - Gestión completa del menú (productos, categorías, extras)
-  - Administración de pedidos en tiempo real
-  - Gestión de repartidores y aprobaciones
-  - Reportes de ventas y analíticas
-  - Configuración del restaurante (horarios, métodos de pago, delivery)
-  - Sistema de cupones y promociones
+### Aplicaciones Móviles (Cliente y Repartidores)
+- **Framework & Lenguaje**: Flutter 3.0+, Dart.
+- **Arquitectura Limpia (Clean Architecture)**: Rigurosa separación técnica en capas (`Core`, `Data`, `Domain` y `Presentation`).
+- **Manejo de Estado**: Implementación del patrón de inyección de estado **BLoC** (Business Logic Component).
 
-**Directorio**: `Napoli_AdminDashboard_Web/`
-
-### 2. 📱 Napoli_CustomerApp_Mobile
-
-**Aplicación móvil para clientes**
-
-- **Tecnología**: Flutter, Dart, BLoC Pattern, Clean Architecture
-- **Funcionalidades**:
-  - Explorar menú y productos
-  - Carrito de compras con personalización
-  - Múltiples direcciones de entrega
-  - Métodos de pago guardados
-  - Seguimiento de pedidos en tiempo real
-  - Historial de pedidos
-  - Sistema de cupones
-  - Calificaciones y reseñas
-
-**Directorio**: `Napoli_CustomerApp_Mobile/`
-
-### 3. 🛵 Napoli_CourierApp_Mobile
-
-**Aplicación móvil para repartidores**
-
-- **Tecnología**: Flutter, Dart, BLoC Pattern, Clean Architecture
-- **Funcionalidades**:
-  - Registro y aprobación de repartidores
-  - Ver pedidos disponibles
-  - Aceptar y gestionar entregas
-  - Navegación GPS integrada
-  - Historial de entregas
-  - Cálculo automático de ganancias
-  - Sistema de calificaciones
-
-**Directorio**: `Napoli_CourierApp_Mobile/`
+### Backend y Base de Datos (Supabase)
+- **Base de Datos**: PostgreSQL 15+ en entorno BaaS vía Supabase.
+- **Lógica Centralizada**: La mayoría de la lógica de negocio imperativa no habita en una API tradicional, se encuentra compilada usando **Stored Procedures (Pl/pgSQL)** para máximo rendimiento en la DB.
+- **Aislamiento Multi-Tenant**: Fuerte uso de Row Level Security (RLS) para segregar clientes, drivers o estadísticas donde un usuario malicioso no puede pasar los límites de su propio `restaurant_id`.
 
 ---
 
-## 🛠️ Tecnologías
-
-### Backend
-- **Supabase**: Backend as a Service (BaaS)
-- **PostgreSQL 15+**: Base de datos relacional
-- **Stored Procedures**: Lógica de negocio en SQL
-- **Supabase Realtime**: WebSockets para actualizaciones en tiempo real
-- **Supabase Storage**: Almacenamiento de imágenes y documentos
-
-### Frontend Web
-- **Next.js 14**: Framework React con SSR
-- **TypeScript**: Tipado estático
-- **Tailwind CSS**: Framework CSS utility-first
-- **shadcn/ui**: Componentes UI accesibles
-- **React Query**: Gestión de estado del servidor
-
-### Mobile Apps
-- **Flutter 3.0+**: Framework multiplataforma
-- **Dart**: Lenguaje de programación
-- **BLoC Pattern**: Gestión de estado
-- **Clean Architecture**: Arquitectura en capas
-- **Supabase Flutter SDK**: Cliente de Supabase para Flutter
-
-### DevOps & Tools
-- **Git**: Control de versiones
-- **GitHub**: Repositorio remoto
-- **VS Code**: Editor de código
-- **Android Studio**: IDE para Flutter
-
----
-
-## ✨ Características Principales
-
-### 🔐 Autenticación y Seguridad
-- Autenticación con Supabase Auth
-- Row Level Security (RLS) en PostgreSQL
-- Aislamiento multi-tenant por `restaurant_id`
-- Roles de usuario (owner, manager, staff, kitchen)
-
-### 📦 Gestión de Pedidos
-- **Estados de pedido**: pending → accepted → processing → ready → delivering → delivered
-- **Snapshots**: Preservación de datos de cliente y dirección
-- **Precios en centavos**: Evita errores de punto flotante
-- **Cálculo automático**: Subtotal, impuestos, delivery, propinas, descuentos
-
-### 💰 Sistema de Pagos
-- Múltiples métodos: Efectivo, tarjeta, transferencia
-- Configuración por restaurante
-- Estados de pago: pending, paid, failed, refunded
-- Recibos y comprobantes
-
-### 🚚 Sistema de Delivery
-- Radio de entrega configurable
-- Costo de envío fijo o por kilómetro
-- Envío gratis por monto mínimo
-- Estimación de tiempos de preparación y entrega
-- Seguimiento GPS en tiempo real
-
-### 🎟️ Promociones y Cupones
-- Cupones de descuento (porcentaje o monto fijo)
-- Promociones por producto
-- Validación automática
-- Límites de uso
-
-### 📊 Reportes y Analíticas
-- Dashboard con métricas en tiempo real
-- Reportes diarios de ventas
-- Productos más vendidos
-- Análisis de repartidores
-- Exportación de datos
-
----
-
-## 🚀 Instalación
+## 4. Prerrequisitos e Instalación
 
 ### Prerrequisitos
+- **Node.js** v18+ (Para el panel de administración).
+- **Flutter SDK** v3.0+ (Para construir Client y Courier App).
+- Git.
+- Entorno de desarrollo para Móviles (Android Studio o Xcode).
+- Cuenta gratuita en [Supabase](https://supabase.com).
 
-- **Node.js** 18+ (para AdminDashboard)
-- **Flutter** 3.0+ (para apps móviles)
-- **Git**
-- **Cuenta de Supabase** (gratuita)
+### Configuración del Servidor y Base de Datos
+1. Inicia un nuevo proyecto en Supabase.
+2. Ingresa al Editor SQL de tu proyecto y ejecuta los scripts de configuración que encontrarás en la carpeta `Napoli_AdminDashboard_Web`:
+   - `schema.sql` (Esquema completo y lógica de negocio).
+   - `rls_policies.sql` (Políticas de seguridad).
+   - `storage_policies.sql` (Acceso a imágenes y buckets).
+3. Asegúrese de habilitar la replicación **Realtime** en su Supabase sobre las tablas `orders`, `drivers` y `notifications`.
 
-### 1. Clonar el Repositorio
+### Iniciar el Proyecto Localmente
 
 ```bash
+# 1. Clonar el Repositorio
 git clone https://github.com/IsaiasSinthesys03/Proyecto_Napoli_APPS.git
 cd Proyecto_Napoli_APPS
-```
 
-### 2. Configurar AdminDashboard Web
-
-```bash
+# 2. Configurar Admin Dashboard (Frontend React/Vite)
 cd Napoli_AdminDashboard_Web
+npm install # o pnpm install
 
-# Instalar dependencias
-pnpm install  # o npm install
-
-# Configurar variables de entorno
+# Configurar credenciales (Clonar el example)
 cp .env.example .env.local
-# Editar .env.local con tus credenciales de Supabase
+# Modifica .env.local para incluir las credenciales de tu propio proyecto Supabase.
 
-# Iniciar servidor de desarrollo
-pnpm run dev  # o npm run dev
-```
+# Iniciar servidor
+npm run dev
+# Dashboard correrá en http://localhost:5173
 
-El dashboard estará disponible en: **http://localhost:5173**
-
-**Comandos disponibles**:
-```bash
-pnpm run dev          # Servidor de desarrollo
-pnpm run build        # Build para producción
-pnpm run preview      # Preview del build
-pnpm run lint         # Linter
-```
-
-### 3. Configurar CustomerApp Mobile
-
-```bash
-cd Napoli_CustomerApp_Mobile
+# 3. Configurar Apps Móviles (Para Courier o Customer Mobile App)
+cd ../Napoli_CustomerApp_Mobile
 flutter pub get
-# Configurar lib/src/core/config/supabase_config.dart
-flutter run
-```
 
-### 4. Configurar CourierApp Mobile
+# Ve al archivo designado para el SDK de Supabase:
+# lib/src/core/config/supabase_config.dart
+# Y añade tu supabaseUrl y supabaseAnonKey proporcionados por tu panel
 
-```bash
-cd Napoli_CourierApp_Mobile
-flutter pub get
-# Configurar lib/src/core/config/supabase_config.dart
+# Correr en un simulador Android / IOS activo
 flutter run
 ```
 
 ---
 
-## ⚙️ Configuración
+## 5. Estructura de Carpetas
 
-### Variables de Entorno
+A continuación, una mirada general a nuestra jerarquía de proyecto fundamentada bajo el principio de separación de funciones (Clean Architecture y Modularidad Frontend):
 
-#### AdminDashboard (.env.local)
-```env
-NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
-```
-
-#### Apps Móviles (supabase_config.dart)
-```dart
-class SupabaseConfig {
-  static const String supabaseUrl = 'tu_supabase_url';
-  static const String supabaseAnonKey = 'tu_supabase_anon_key';
-}
-```
-
-### Base de Datos
-
-1. Crear proyecto en [Supabase](https://supabase.com)
-2. Ejecutar los scripts SQL en orden:
-   - `schema.sql`: Esquema completo de la base de datos
-   - `stored_procedures.sql`: Procedimientos almacenados
-   - `seed.sql`: Datos de prueba (opcional)
-
-3. Habilitar Realtime en las tablas:
-   - `orders`
-   - `drivers`
-   - `notifications`
-
-4. Configurar Storage Buckets:
-   - `restaurant-assets` (público)
-   - `product-images` (público)
-   - `driver-photos` (público)
-   - `driver-documents` (privado)
-
----
-
-## 📚 Documentación
-
-El proyecto incluye documentación completa en archivos Markdown:
-
-- **[NAPOLI_GUIDE.md](NAPOLI_GUIDE.md)**: Guía maestra de sincronización y arquitectura
-- **[INTEGRATION_PLAN.md](INTEGRATION_PLAN.md)**: Plan de integración entre proyectos
-- **[NAPOLI_ADMINDASHBOARD_ANALYSIS.md](NAPOLI_ADMINDASHBOARD_ANALYSIS.md)**: Análisis del Dashboard
-- **[NAPOLI_COURIERAPP_ANALYSIS.md](NAPOLI_COURIERAPP_ANALYSIS.md)**: Análisis de CourierApp
-- **[NAPOLI_CUSTOMERAPP_ANALYSIS.md](NAPOLI_CUSTOMERAPP_ANALYSIS.md)**: Análisis de CustomerApp
-- **[COURIERAPP_FINAL_STATE.md](COURIERAPP_FINAL_STATE.md)**: Estado final de CourierApp
-- **[CUSTOMERAPP_QUICKSTART.md](CUSTOMERAPP_QUICKSTART.md)**: Guía rápida de CustomerApp
-- **[AI_TRAINING_GUIDE.md](AI_TRAINING_GUIDE.md)**: Guía de entrenamiento para IA
-- **[AI_INITIALIZATION_PROMPT.md](AI_INITIALIZATION_PROMPT.md)**: Prompt de inicialización para IA
-
----
-
-## 📂 Estructura del Proyecto
-
-```
+```text
 Proyecto_Napoli_APPS/
-├── Napoli_AdminDashboard_Web/     # Dashboard web Next.js
-│   ├── src/
-│   │   ├── app/                   # App Router de Next.js
-│   │   ├── components/            # Componentes React
-│   │   ├── lib/                   # Utilidades y configuración
-│   │   └── types/                 # Tipos TypeScript
-│   ├── public/                    # Archivos estáticos
-│   └── package.json
+├── Napoli_AdminDashboard_Web/     # SPA Web Dashboard para pizzerías.
+│   ├── public/                    # Assets fijos e íconos.
+│   ├── schema.sql                 # Lógica de Backend integrada a BD.
+│   ├── rls_policies.sql           # Políticas estrictamente separadas.
+│   └── src/
+│       ├── components/            # Shadcn y abstracciones UI.
+│       ├── lib/                   # Integración con el de Supabase Client.
+│       └── pages/                 # Rutas orquestadas por React Router.
 │
-├── Napoli_CustomerApp_Mobile/     # App móvil de clientes Flutter
-│   ├── lib/
-│   │   ├── src/
-│   │   │   ├── core/             # Configuración y utilidades
-│   │   │   ├── data/             # Capa de datos (repositories, data sources)
-│   │   │   ├── domain/           # Capa de dominio (entities, use cases)
-│   │   │   └── presentation/     # Capa de presentación (UI, BLoC)
-│   │   └── main.dart
-│   ├── SQL/                       # Scripts SQL de CustomerApp
-│   └── pubspec.yaml
+├── Napoli_CustomerApp_Mobile/     # Aplicación del Cliente final.
+│   └── lib/
+│       ├── src/
+│       │   ├── core/              # Variables globales y Config Supabase.
+│       │   ├── data/              # Repositories y Datasources (API DB).
+│       │   ├── domain/            # Entities y Casos de Uso del negocio.
+│       │   └── presentation/      # Estado en BLoC / Pantallas visuales.
+│       └── main.dart
 │
-├── Napoli_CourierApp_Mobile/      # App móvil de repartidores Flutter
-│   ├── lib/
-│   │   ├── src/
-│   │   │   ├── core/             # Configuración y utilidades
-│   │   │   ├── data/             # Capa de datos
-│   │   │   ├── domain/           # Capa de dominio
-│   │   │   └── presentation/     # Capa de presentación
-│   │   └── main.dart
-│   └── pubspec.yaml
-│
-├── README.md                      # Este archivo
-├── NAPOLI_GUIDE.md               # Guía maestra
-├── INTEGRATION_PLAN.md           # Plan de integración
-└── [otros archivos de documentación]
+└── Napoli_CourierApp_Mobile/      # Aplicación del Repartidor.
+    └── lib/
+        └── src/                   # Misma filosofía Clean Architecture.
 ```
 
 ---
 
-## 🤝 Contribuir
+## 6. El Equipo
 
-Las contribuciones son bienvenidas. Por favor:
+El desarrollo de este software fue un desafío arquitectónico masivo. Nada de esto habría sido realidad sin una dinámica real en equipo, implementando coordinación y correcta gestión de ramas funcionales.
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-### Guías de Contribución
-
-- Seguir Clean Architecture en apps móviles
-- Usar Stored Procedures para lógica de negocio
-- Mantener sincronización de ENUMs entre proyectos
-- Documentar cambios en archivos MD correspondientes
-- Incluir `restaurant_id` en todas las queries multi-tenant
-
----
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
-
----
-
-## 👥 Autores
-
-- **Equipo Napoli** - *Desarrollo inicial*
-
----
-
-## 🙏 Agradecimientos
-
-- [Supabase](https://supabase.com) por el excelente BaaS
-- [Flutter](https://flutter.dev) por el framework móvil
-- [Next.js](https://nextjs.org) por el framework web
-- [shadcn/ui](https://ui.shadcn.com) por los componentes UI
-
----
-
-## 📞 Contacto
-
-Para preguntas o soporte, por favor abre un issue en GitHub.
-
----
+- **Braulio Isaias Bernal Padron** - Desarrollo principal y arquitectura base.
+- **Jose Gaspar Anguas Ku** - Flujos de QA, pruebas, y validaciones de implementaciones.
+- **Francia Faride Ojeda Estrella** - Coordinación e integración entre interfaces funcionales.
+- **Jesus Aaron Tun Can** - Soporte técnico y diseño de flujos operacionales.
+- **Andri Yael Rodriguez Flota** - Lógica core y estructura en la capa de datos.
 
 <div align="center">
-  <strong>Hecho con ESTRES, NOCHES SIN DORMIR Y ANSIEDAD por Isaias Sinthesys para la pizzería Napoli</strong>
+  <em>Nota del equipo: Hecho con mucho esfuerzo, noches sin dormir y ansiedad.</em><br/>
+  <strong>¡GASPAR ES UN MALDITO SOBREEXPLOTADOR! 😅</strong>
 </div>
 
+---
+
+## 7. Documentación y Licencia
+
+**Licencia:** Este proyecto se distribuye abrigado por los términos de la [Licencia MIT](LICENSE).
+
+Si deseas esparcir y entender la forma en la que diseñamos con nuestro stack, te sugerimos leer las referencias arquitectónicas internas:
+- [NAPOLI_GUIDE.md](NAPOLI_GUIDE.md): Guía maestra del flujo operacional.
+- [INTEGRATION_PLAN.md](INTEGRATION_PLAN.md): Secuencia de integración.
+- Y nuestros `*_ANALYSIS.md` específicos por módulo.
+
+<br>
 <div align="center">
-  <strong>GASPAR ES UN MALDITO SOBREEXPLOTADOR</strong>
+  🍕 <strong>Napoli - Simplificando el ecosistema de envíos de pizzerías</strong>
 </div>
